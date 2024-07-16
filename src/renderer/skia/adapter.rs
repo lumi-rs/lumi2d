@@ -1,6 +1,6 @@
-use skia_safe::{Canvas, Color4f, Font, Paint, Point, RRect, Rect, TextBlob};
+use skia_safe::{AlphaType, Canvas, Color4f, ColorType, Font, Paint, Point, RRect, Rect, TextBlob};
 
-use crate::{renderer::{images::CacheableImage, objects}, Objects};
+use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects}, Objects};
 
 use super::SkiaRenderer;
 
@@ -92,12 +92,25 @@ pub(crate) fn rgba_to_color4f(color: u32) -> Color4f {
 
 pub(crate) fn image_to_skia(image: &CacheableImage) -> skia_safe::Image {
     let dimensions = image.dimensions();
+    let (pixels, color_type, alpha_type) = match image.format() {
+        PixelFormat::RGB8 => (
+            // Convert to RGBA8, as Skia does not support just RGB8
+            image.pixels()
+            .chunks(3)
+            .flat_map(|rgb| [rgb[0], rgb[1], rgb[2], 255])
+            .collect(),
+            ColorType::RGBA8888,
+            AlphaType::Unpremul
+        ),
+        PixelFormat::RGBA8 => (image.pixels(), ColorType::RGBA8888, AlphaType::Unpremul),
+        PixelFormat::RGBA8Premul => (image.pixels(), ColorType::RGBA8888, AlphaType::Premul)
+    };
 
-    let data = unsafe { skia_safe::Data::new_bytes(&image.pixels()) };
+    let data = unsafe { skia_safe::Data::new_bytes(&pixels) };
     let image_info = skia_safe::ImageInfo::new(
         (dimensions.width as _, dimensions.height as _),
-        skia_safe::ColorType::RGBA8888,
-        skia_safe::AlphaType::Unpremul,
+        color_type,
+        alpha_type,
         None
     );
 
