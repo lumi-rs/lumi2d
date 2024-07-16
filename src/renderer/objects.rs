@@ -1,6 +1,9 @@
+use super::images::CacheableImage;
+
 pub enum Objects {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
-    Text { text: String, font: Option<String>, size: u32, color: u32, rect: Rect }
+    Text { text: String, font: Option<String>, size: u32, color: u32, rect: Rect },
+    Image { rect: Rect, image: CacheableImage }
 }
 
 pub struct Rect {
@@ -37,13 +40,22 @@ impl Rounding {
 
 #[allow(clippy::too_many_arguments)]
 impl Objects {
-    /// Shorthand function for creating an `Objects::Rectangle` with the specified properties
-    pub fn rectangle(x: u32, y: u32, width: u32, height: u32, color: u32, rounding: Option<Rounding>) -> Objects {
-        Objects::Rectangle { color, rounding, rect: Rect { x, y, width, height } }
+    pub fn rect(x: u32, y: u32, width: u32, height: u32) -> Rect {
+        Rect { x, y, width, height }
     }
 
-    /// Shorthand function for creating an `Objects::Text` with the specified properties
+    /// Shorthand function for creating an `Objects::Rectangle` with the given properties
+    pub fn rectangle(x: u32, y: u32, width: u32, height: u32, color: u32, rounding: Option<Rounding>) -> Objects {
+        Objects::Rectangle { color, rounding, rect: Self::rect(x, y, width, height) }
+    }
+
+    /// Shorthand function for creating an `Objects::Text` with the given properties
     pub fn text(x: u32, y: u32, width: u32, height: u32, text: String, font: Option<String>, size: u32, color: u32) -> Objects {
-        Objects::Text { text, font, color, size, rect: Rect { x, y, width, height } }
+        Objects::Text { text, font, color, size, rect: Self::rect(x, y, width, height) }
+    }
+
+    /// Shorthand function for creating an `Objects::Image` with the given properties
+    pub fn image(x: u32, y: u32, width: u32, height: u32, image: CacheableImage) -> Objects {
+        Objects::Image { rect: Self::rect(x, y, width, height), image}
     }
 }

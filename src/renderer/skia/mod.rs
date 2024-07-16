@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap, fs, path::Path};
 
 use crate::{backend::windows::BackendWindows, Objects};
 
-use super::{errors::RendererError, RResult, Renderer};
+use super::{errors::RendererError, images::CacheableImage, RResult, Renderer};
 
 pub mod errors;
 pub mod adapter;
@@ -17,6 +17,7 @@ use errors::SkiaRendererError;
 use log::warn;
 use skia_safe::{Canvas, Color4f, FontMgr, Typeface};
 use strum::{EnumIter, IntoEnumIterator};
+use uuid::Uuid;
 
 #[cfg(feature = "skia-opengl")]
 use opengl::SkiaOpenGLSurface;
@@ -28,7 +29,8 @@ pub struct SkiaRenderer {
     skia_backend: SkiaRenderingBackends,
     font_map: RefCell<HashMap<String, Typeface>>,
     font_mgr: FontMgr,
-    default_font: RefCell<Option<Typeface>>
+    default_font: RefCell<Option<Typeface>>,
+    image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>
 }
 
 impl SkiaRenderer {
@@ -37,7 +39,8 @@ impl SkiaRenderer {
             skia_backend: SkiaRenderingBackends::create(window)?,
             font_map: RefCell::new(HashMap::new()),
             font_mgr: FontMgr::new(),
-            default_font: RefCell::new(None)
+            default_font: RefCell::new(None),
+            image_cache: RefCell::new(HashMap::new())
         })
     }
 
@@ -50,6 +53,19 @@ impl SkiaRenderer {
             }  
         } else {
             self.default_font.borrow().clone()
+        }
+    }
+
+    pub fn get_or_load_image(&self, image: &CacheableImage) -> skia_safe::Image {
+        let mut cache = self.image_cache.borrow_mut();
+
+        if let Some(i) = cache.get(image.uuid()) {
+            i.clone()
+        } else {
+            let skia_image = adapter::image_to_skia(image);
+    
+            cache.insert(image.uuid().clone(), skia_image.clone());
+            skia_image
         }
     }
 }
@@ -93,6 +109,16 @@ impl Renderer for SkiaRenderer {
             alias.to_string(),
             typeface
         );
+    }
+
+    fn load_image(&self, image: &CacheableImage) {
+        let skia_image = adapter::image_to_skia(image);
+
+        self.image_cache.borrow_mut().insert(image.uuid().clone(), skia_image);
+    }
+
+    fn unload_image(&self, image: &CacheableImage) {
+        self.image_cache.borrow_mut().remove(image.uuid());
     }
 }
 

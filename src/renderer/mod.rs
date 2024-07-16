@@ -1,12 +1,14 @@
 use std::path::Path;
 
 use enum_dispatch::enum_dispatch;
+use images::CacheableImage;
 use log::warn;
 use strum::{EnumIter, IntoEnumIterator};
 
 
 pub mod errors;
 pub mod objects;
+pub mod images;
 
 #[cfg(feature = "r-wgpu")]
 pub mod wgpu;
@@ -76,5 +78,9 @@ pub trait Renderer {
     /// Register a font to be used with the given alias
     fn register_font(&self, font_file: impl AsRef<Path>, alias: &str);
     fn register_default_font(&self, font_file: impl AsRef<Path>, alias: &str);
+    /// Preload an image into the Renderer's image cache. Not required to be called manually.
+    fn load_image(&self, image: &CacheableImage);
+    /// Remove an image from the Renderer's cache. Needs to be called manually (for now).
+    fn unload_image(&self, image: &CacheableImage);
 }
 

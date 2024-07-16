@@ -79,6 +79,7 @@ pub trait BackendWindow {
     fn flush_events(&self) -> Vec<WindowEvents>;
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Dimensions {
     pub width: u32,
     pub height: u32
