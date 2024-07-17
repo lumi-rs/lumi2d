@@ -175,7 +175,7 @@ impl SkiaVulkanBackend {
             )
         };
     
-        let direct_context = DirectContext::new_vulkan(&backend_context, None).ok_or(VulkanErr::SkiaContext)?;
+        let direct_context = skia_safe::gpu::direct_contexts::make_vulkan(&backend_context, None).ok_or(VulkanErr::SkiaContext)?;
 
         Ok(Self {
             direct_context: RefCell::new(direct_context),

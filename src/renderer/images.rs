@@ -28,7 +28,7 @@ pub enum PixelFormat {
 
 impl CacheableImage {
     /// ### Creates a CachedImage from the image's encoded bytes.
-    /// This uses either Skia's built in image decoding, if `r-skia` is enabled, or the `image` crate, if the `image` feature is enabled.
+    /// This uses either Skia's built in image decoding, if `r-skia` is enabled, or the `image` crate, if the `image` feature is enabled.  
     /// If neither are enabled, this will panic.
     #[allow(unreachable_code)]
     pub fn from_encoded(bytes: &[u8]) -> Self {

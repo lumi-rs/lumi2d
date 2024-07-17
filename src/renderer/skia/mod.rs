@@ -68,6 +68,10 @@ impl SkiaRenderer {
             skia_image
         }
     }
+
+    pub fn get_font_mgr(&self) -> FontMgr {
+        self.font_mgr.clone()
+    }
 }
 
 impl Renderer for SkiaRenderer {

@@ -1,4 +1,4 @@
-use skia_safe::{AlphaType, Canvas, Color4f, ColorType, Font, Paint, Point, RRect, Rect, TextBlob};
+use skia_safe::{color_filters, AlphaType, BlendMode, Canvas, Color4f, ColorType, Font, Paint, Point, RRect, Rect, SamplingOptions, TextBlob};
 
 use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects}, Objects};
 
@@ -65,6 +65,20 @@ pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
                 skia_safe::FilterMode::Nearest,
                 None
             );
+            
+        },
+        Objects::Svg { rect, svg, color, scale } => {
+            let dom = skia_safe::svg::Dom::from_bytes(&svg, renderer.get_font_mgr()).unwrap();
+            let mut paint = paint(color, 1.0);
+            let mut surface = canvas.new_surface(&canvas.image_info(), None).unwrap();
+            let svg_canvas = surface.canvas();
+
+            paint.set_color_filter(color_filters::blend(rgba_to_color4f(color).to_color(), BlendMode::SrcIn));
+
+            svg_canvas.scale(scale);
+            dom.render(svg_canvas);
+            
+            surface.draw(canvas, (rect.x as f32, rect.y as f32), SamplingOptions::default(), Some(&paint))
         }
     }
 }
