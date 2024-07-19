@@ -66,7 +66,7 @@ impl SkiaRenderer {
         } else {
             let skia_image = adapter::image_to_skia(image);
     
-            cache.insert(image.uuid().clone(), skia_image.clone());
+            cache.insert(*image.uuid(), skia_image.clone());
             skia_image
         }
     }
@@ -79,7 +79,7 @@ impl SkiaRenderer {
         } else {
             let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
     
-            cache.insert(svg.uuid().clone(), skia_svg.clone());
+            cache.insert(*svg.uuid(), skia_svg.clone());
             skia_svg
         }
     }
@@ -133,7 +133,7 @@ impl Renderer for SkiaRenderer {
     fn load_image(&self, image: &CacheableImage) {
         let skia_image = adapter::image_to_skia(image);
 
-        self.image_cache.borrow_mut().insert(image.uuid().clone(), skia_image);
+        self.image_cache.borrow_mut().insert(*image.uuid(), skia_image);
     }
 
     fn unload_image(&self, image: &CacheableImage) {
@@ -143,7 +143,7 @@ impl Renderer for SkiaRenderer {
     fn load_svg(&self, svg: &CacheableSvg) {
         let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
 
-        self.svg_cache.borrow_mut().insert(svg.uuid().clone(), skia_svg);
+        self.svg_cache.borrow_mut().insert(*svg.uuid(), skia_svg);
     }
 
     fn unload_svg(&self, svg: &CacheableSvg) {

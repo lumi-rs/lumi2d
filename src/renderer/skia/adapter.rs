@@ -21,7 +21,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
                     |(x, y)| (x as i32, y as i32).into()
                 );
 
-                rrect.set_rect_radii(rrect.rect().clone(), &radii);
+                rrect.set_rect_radii(*rrect.rect(), &radii);
             }
 
             canvas.draw_rrect(
@@ -133,13 +133,11 @@ pub(crate) fn image_to_skia(image: &CacheableImage) -> skia_safe::Image {
         None
     );
 
-    let skia_image = skia_safe::images::raster_from_data(
+    skia_safe::images::raster_from_data(
         &image_info, 
         data, 
         dimensions.width as usize * 4
-    ).unwrap();
-
-    skia_image
+    ).unwrap()
 }
 
 pub(crate) fn svg_to_skia(svg: &CacheableSvg, font_mgr: FontMgr) -> Dom {
