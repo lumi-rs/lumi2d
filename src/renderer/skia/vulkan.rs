@@ -1,6 +1,6 @@
 use std::{cell::{Cell, RefCell}, sync::Arc};
 
-use log::{*};
+use log::*;
 use skia_safe::{gpu::{vk::BackendContext, DirectContext}, Canvas, SurfaceProps, SurfacePropsFlags};
 use vulkano::{
     device::{physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo, QueueFlags},
@@ -15,10 +15,11 @@ use crate::{backend::windows::{BackendWindow, BackendWindows}, renderer::{errors
 use super::SkiaRenderingBackend;
 
 
-const PRESENT_MODE: PresentMode = PresentMode::Fifo;
-const IMAGE_FORMAT: Format = vulkano::format::Format::B8G8R8A8_UNORM;
+const IMAGE_FORMAT: Format = Format::R8G8B8A8_UNORM;
+const SKIA_FORMAT: skia_safe::gpu::vk::Format = skia_safe::gpu::vk::Format::R8G8B8A8_UNORM;
+const SKIA_TYPE: skia_safe::ColorType = skia_safe::ColorType::RGBA8888;
 
-#[allow(unused)]
+
 pub struct SkiaVulkanBackend {
     direct_context: RefCell<DirectContext>,
     device: Arc<Device>,
@@ -34,6 +35,7 @@ impl SkiaVulkanBackend {
     pub fn new(window: &BackendWindows) -> RResult<SkiaVulkanBackend> {
         let handles = window.handles().or(Err(RendererError::WindowHandles))?;
         let dim = window.dimensions();
+        let present_mode = if crate::vsync() { PresentMode::Fifo } else { PresentMode::Immediate };
 
         let vulkan = VulkanLibrary::new().map_err(VulkanErr::InitLibrary)?;
         let req_extensions = Surface::required_extensions(&handles).or(Err(RendererError::WindowHandles))?;
@@ -102,24 +104,23 @@ impl SkiaVulkanBackend {
         ).or(Err(VulkanErr::NoDevice))?;
 
         let queue = queues.next().ok_or(VulkanErr::NoQueue)?;
+        let surface_capabilities = device
+        .physical_device()
+        .surface_capabilities(&surface, Default::default())
+        .unwrap();
+        // let image_format = device
+        // .physical_device()
+        // .surface_formats(&surface, Default::default())
+        // .unwrap()[0]
+        // .0;
 
         let (swapchain, images) = {
-            let surface_capabilities = device
-            .physical_device()
-            .surface_capabilities(&surface, Default::default())
-            .unwrap();
-            //let image_format = device
-            //.physical_device()
-            //.surface_formats(&surface, Default::default())
-            //.unwrap()[0]
-            //.0;
-
             Swapchain::new(
                 device.clone(),
                 surface.clone(),
                 SwapchainCreateInfo {
                     image_format: IMAGE_FORMAT,
-                    present_mode: PRESENT_MODE,
+                    present_mode,
                     min_image_count: surface_capabilities.min_image_count.max(2),
                     image_extent: [dim.width, dim.height],
                     image_usage: ImageUsage::COLOR_ATTACHMENT,
@@ -252,7 +253,7 @@ impl SkiaRenderingBackend for SkiaVulkanBackend {
         let image_view = self.swapchain_image_views.borrow()[image_index as usize].clone();
         let alloc = skia_safe::gpu::vk::Alloc::default();
 
-        debug_assert_eq!(image_view.format(), vulkano::format::Format::B8G8R8A8_UNORM);
+        debug_assert_eq!(image_view.format(), IMAGE_FORMAT);
 
         let image_info = &unsafe {
             skia_safe::gpu::vk::ImageInfo::new(
@@ -260,7 +261,7 @@ impl SkiaRenderingBackend for SkiaVulkanBackend {
                 alloc,
                 skia_safe::gpu::vk::ImageTiling::OPTIMAL,
                 skia_safe::gpu::vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-                skia_safe::gpu::vk::Format::B8G8R8A8_UNORM,
+                SKIA_FORMAT,
                 1,
                 self.queue.queue_family_index(),
                 None,
@@ -277,7 +278,7 @@ impl SkiaRenderingBackend for SkiaVulkanBackend {
             direct_context,
             render_target,
             skia_safe::gpu::SurfaceOrigin::TopLeft,
-            skia_safe::ColorType::BGRA8888,
+            SKIA_TYPE,
             None,
             Some(&surface_props),
         ).ok_or(VulkanErr::SkiaSurface)?;
