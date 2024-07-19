@@ -4,11 +4,13 @@ use enum_dispatch::enum_dispatch;
 use images::CacheableImage;
 use log::warn;
 use strum::{EnumIter, IntoEnumIterator};
+use svgs::CacheableSvg;
 
 
 pub mod errors;
 pub mod objects;
 pub mod images;
+pub mod svgs;
 
 #[cfg(feature = "r-wgpu")]
 pub mod wgpu;
@@ -80,7 +82,10 @@ pub trait Renderer {
     fn register_default_font(&self, font_file: impl AsRef<Path>, alias: &str);
     /// Preload an image into the Renderer's image cache. Not required to be called manually.
     fn load_image(&self, image: &CacheableImage);
-    /// Remove an image from the Renderer's cache. Needs to be called manually (for now).
+    /// Remove an image from the Renderer's cache. Needs to be called manually if the image should not be loaded permanently (for now).
     fn unload_image(&self, image: &CacheableImage);
+    /// Preload an SVG into the Renderer's SVG cache. Not required to be called manually.
+    fn load_svg(&self, svg: &CacheableSvg);
+    /// Remove an SVG from the Renderer's cache. Needs to be called manually if the SVG should not be loaded permanently (for now).
+    fn unload_svg(&self, svg: &CacheableSvg);
 }
-

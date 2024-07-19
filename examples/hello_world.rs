@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{windows::WindowDetails, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, Renderer}, Objects};
+use lumi2d::{backend::{windows::WindowDetails, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, Renderer}, Objects};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -26,7 +26,7 @@ fn main() {
         let image = CacheableImage::from_encoded(bytes);
 
         let svg_bytes = include_bytes!("home.svg");
-        let svg = std::sync::Arc::from_iter(svg_bytes.clone());
+        let svg = CacheableSvg::new_cloned(svg_bytes);
 
 
         window.run(renderer, |_events| {

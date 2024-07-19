@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap, fs, path::Path};
 
 use crate::{backend::windows::BackendWindows, Objects};
 
-use super::{errors::RendererError, images::CacheableImage, RResult, Renderer};
+use super::{errors::RendererError, images::CacheableImage, svgs::CacheableSvg, RResult, Renderer};
 
 pub mod errors;
 pub mod adapter;
@@ -30,7 +30,8 @@ pub struct SkiaRenderer {
     font_map: RefCell<HashMap<String, Typeface>>,
     font_mgr: FontMgr,
     default_font: RefCell<Option<Typeface>>,
-    image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>
+    image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>,
+    svg_cache: RefCell<HashMap<Uuid, skia_safe::svg::Dom>>
 }
 
 impl SkiaRenderer {
@@ -40,7 +41,8 @@ impl SkiaRenderer {
             font_map: RefCell::new(HashMap::new()),
             font_mgr: FontMgr::new(),
             default_font: RefCell::new(None),
-            image_cache: RefCell::new(HashMap::new())
+            image_cache: RefCell::new(HashMap::new()),
+            svg_cache: RefCell::new(HashMap::new())
         })
     }
 
@@ -66,6 +68,19 @@ impl SkiaRenderer {
     
             cache.insert(image.uuid().clone(), skia_image.clone());
             skia_image
+        }
+    }
+
+    pub fn get_or_load_svg(&self, svg: &CacheableSvg) -> skia_safe::svg::Dom {
+        let mut cache = self.svg_cache.borrow_mut();
+
+        if let Some(i) = cache.get(svg.uuid()) {
+            i.clone()
+        } else {
+            let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
+    
+            cache.insert(svg.uuid().clone(), skia_svg.clone());
+            skia_svg
         }
     }
 
@@ -123,6 +138,16 @@ impl Renderer for SkiaRenderer {
 
     fn unload_image(&self, image: &CacheableImage) {
         self.image_cache.borrow_mut().remove(image.uuid());
+    }
+
+    fn load_svg(&self, svg: &CacheableSvg) {
+        let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
+
+        self.svg_cache.borrow_mut().insert(svg.uuid().clone(), skia_svg);
+    }
+
+    fn unload_svg(&self, svg: &CacheableSvg) {
+        self.svg_cache.borrow_mut().remove(svg.uuid());
     }
 }
 

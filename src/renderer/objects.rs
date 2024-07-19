@@ -1,12 +1,10 @@
-use std::sync::Arc;
-
-use super::images::CacheableImage;
+use super::{images::CacheableImage, svgs::CacheableSvg};
 
 pub enum Objects {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
     Text { text: String, font: Option<String>, size: u32, color: u32, rect: Rect },
     Image { rect: Rect, image: CacheableImage },
-    Svg { rect: Rect, svg: Arc<[u8]>, color: u32, scale: (f32, f32) }
+    Svg { rect: Rect, svg: CacheableSvg, color: u32, scale: (f32, f32) }
 }
 
 pub struct Rect {
@@ -65,7 +63,7 @@ impl Objects {
     /// Shorthand function for creating an `Objects::Image` with the given properties.  
     /// Currently uses relative scaling of the SVG as skia-bindings does not support getting the size from the SVG yet :(  
     /// This means that the final size will be the base svg size multiplied by the scale
-    pub fn svg_scaled(x: u32, y: u32, width: u32, height: u32, svg: Arc<[u8]>, color: u32, scale: (f32, f32)) -> Objects {
+    pub fn svg_scaled(x: u32, y: u32, width: u32, height: u32, svg: CacheableSvg, color: u32, scale: (f32, f32)) -> Objects {
         Objects::Svg { rect: Self::rect(x, y, width, height), svg, color, scale }
     }
 }

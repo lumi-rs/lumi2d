@@ -1,10 +1,10 @@
-use skia_safe::{color_filters, AlphaType, BlendMode, Canvas, Color4f, ColorType, Font, Paint, Point, RRect, Rect, SamplingOptions, TextBlob};
+use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
-use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects}, Objects};
+use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Objects};
 
 use super::SkiaRenderer;
 
-pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
+pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
     match object {
         Objects::Rectangle { rounding, color, rect } => {
             let paint = paint(color, 1.0);
@@ -42,7 +42,7 @@ pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
             let text_blob = TextBlob::from_str(text, &skia_font).unwrap();
 
             canvas.draw_text_blob(
-                text_blob, 
+                text_blob,
                 (rect.x as f32, (rect.y + size) as f32),
                 &paint
             );
@@ -50,7 +50,7 @@ pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
         Objects::Image { rect, image } => {
             let skia_image = renderer.get_or_load_image(&image);
 
-            let lattice = skia_safe::canvas::lattice::Lattice {
+            let lattice = Lattice {
                 x_divs: &[],
                 y_divs: &[],
                 rect_types: None,
@@ -60,16 +60,16 @@ pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
 
             canvas.draw_image_lattice(
                 skia_image,
-                &lattice, 
+                &lattice,
                 skia_rect(rect),
-                skia_safe::FilterMode::Nearest,
+                FilterMode::Nearest,
                 None
             );
-            
         },
         Objects::Svg { rect, svg, color, scale } => {
-            let dom = skia_safe::svg::Dom::from_bytes(&svg, renderer.get_font_mgr()).unwrap();
+            let dom = renderer.get_or_load_svg(&svg);
             let mut paint = paint(color, 1.0);
+
             let mut surface = canvas.new_surface(&canvas.image_info(), None).unwrap();
             let svg_canvas = surface.canvas();
 
@@ -78,7 +78,12 @@ pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
             svg_canvas.scale(scale);
             dom.render(svg_canvas);
             
-            surface.draw(canvas, (rect.x as f32, rect.y as f32), SamplingOptions::default(), Some(&paint))
+            surface.draw(
+                canvas,
+                (rect.x as f32, rect.y as f32),
+                SamplingOptions::default(),
+                Some(&paint)
+            );
         }
     }
 }
@@ -86,7 +91,7 @@ pub fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
 pub(crate) fn paint(color: u32, width: f32) -> Paint {
     let mut paint = Paint::new(rgba_to_color4f(color), None);
     paint.set_anti_alias(true);
-    paint.set_style(skia_safe::PaintStyle::StrokeAndFill);
+    paint.set_style(PaintStyle::StrokeAndFill);
     paint.set_stroke_width(width);
 
     paint
@@ -120,8 +125,8 @@ pub(crate) fn image_to_skia(image: &CacheableImage) -> skia_safe::Image {
         PixelFormat::RGBA8Premul => (image.pixels(), ColorType::RGBA8888, AlphaType::Premul)
     };
 
-    let data = unsafe { skia_safe::Data::new_bytes(&pixels) };
-    let image_info = skia_safe::ImageInfo::new(
+    let data = unsafe { Data::new_bytes(&pixels) };
+    let image_info = ImageInfo::new(
         (dimensions.width as _, dimensions.height as _),
         color_type,
         alpha_type,
@@ -135,4 +140,8 @@ pub(crate) fn image_to_skia(image: &CacheableImage) -> skia_safe::Image {
     ).unwrap();
 
     skia_image
+}
+
+pub(crate) fn svg_to_skia(svg: &CacheableSvg, font_mgr: FontMgr) -> Dom {
+    Dom::from_bytes(&svg.bytes(), font_mgr).unwrap()
 }

@@ -71,7 +71,7 @@ impl CacheableImage {
 
         let mut pixels = vec![0u8; byte_size];
 
-        image.read_pixels(&info, &mut pixels, info.min_row_bytes(), (0, 0), skia_safe::image::CachingHint::Disallow);
+        image.read_pixels(&info, &mut pixels, info.min_row_bytes(), (0, 0), skia_safe::image::CachingHint::Allow);
 
         let pixels = Arc::from_iter(pixels);
 
