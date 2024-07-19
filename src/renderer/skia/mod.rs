@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, fs, path::Path};
+use std::{cell::RefCell, collections::HashMap};
 
 use crate::{backend::windows::BackendWindows, Objects};
 
@@ -6,6 +6,7 @@ use super::{errors::RendererError, images::CacheableImage, svgs::CacheableSvg, R
 
 pub mod errors;
 pub mod adapter;
+
 #[cfg(feature = "skia-opengl")]
 pub mod opengl;
 #[cfg(feature = "skia-vulkan")]
@@ -104,9 +105,8 @@ impl Renderer for SkiaRenderer {
         self.skia_backend.recreate(window)
     }
 
-    fn register_font(&self, font_file: impl AsRef<Path>, alias: &str) {
-        let contents = fs::read(font_file).unwrap();
-        let typeface = self.font_mgr.new_from_data(&contents, None).unwrap();
+    fn register_font(&self, bytes: &[u8], alias: &str) {
+        let typeface = self.font_mgr.new_from_data(bytes, None).unwrap();
 
         if self.default_font.borrow().is_none() {
             self.default_font.replace(Some(typeface.clone()));
@@ -118,9 +118,8 @@ impl Renderer for SkiaRenderer {
         );
     }
 
-    fn register_default_font(&self, font_file: impl AsRef<Path>, alias: &str) {
-        let contents = fs::read(font_file).unwrap();
-        let typeface = self.font_mgr.new_from_data(&contents, None).unwrap();
+    fn register_default_font(&self, bytes: &[u8], alias: &str) {
+        let typeface = self.font_mgr.new_from_data(bytes, None).unwrap();
 
         self.default_font.replace(Some(typeface.clone()));
 

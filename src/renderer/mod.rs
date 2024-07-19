@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use enum_dispatch::enum_dispatch;
 use images::CacheableImage;
 use log::warn;
@@ -78,8 +76,10 @@ pub trait Renderer {
     fn render(&self, window: &BackendWindows, objects: Vec<Objects>) -> RResult<()>;
     fn recreate(&self, window: &BackendWindows);
     /// Register a font to be used with the given alias
-    fn register_font(&self, font_file: impl AsRef<Path>, alias: &str);
-    fn register_default_font(&self, font_file: impl AsRef<Path>, alias: &str);
+    fn register_font(&self, bytes: &[u8], alias: &str);
+    /// Register a font to be used with the given alias, and set it as the deafult font.  
+    /// If this is not called, the default font will be the first one registered.
+    fn register_default_font(&self, bytes: &[u8], alias: &str);
     /// Preload an image into the Renderer's image cache. Not required to be called manually.
     fn load_image(&self, image: &CacheableImage);
     /// Remove an image from the Renderer's cache. Needs to be called manually if the image should not be loaded permanently (for now).
