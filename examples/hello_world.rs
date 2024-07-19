@@ -24,7 +24,7 @@ fn main() {
         let mut last_frame = Instant::now();
 
         let image_bytes = include_bytes!("/home/der/Downloads/cat/album_2024-05-08_21-21-49.gif");
-        let image = CacheableImage::from_encoded(image_bytes);
+        let image = CacheableImage::from_encoded(image_bytes).unwrap();
 
         let svg_bytes = include_bytes!("home.svg");
         let svg = CacheableSvg::new_cloned(svg_bytes);

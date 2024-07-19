@@ -1,4 +1,4 @@
-use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
+use skia_safe::{canvas::Lattice, color_filters, /*svg::Dom,*/ AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
 use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Objects};
 
@@ -67,7 +67,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             );
         },
         Objects::Svg { rect, svg, color, scale } => {
-            let dom = renderer.get_or_load_svg(&svg);
+            //let dom = renderer.get_or_load_svg(&svg);
             let mut paint = paint(color, 1.0);
 
             let mut surface = canvas.new_surface(&canvas.image_info(), None).unwrap();
@@ -76,7 +76,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             paint.set_color_filter(color_filters::blend(rgba_to_color4f(color).to_color(), BlendMode::SrcIn));
 
             svg_canvas.scale(scale);
-            dom.render(svg_canvas);
+            //dom.render(svg_canvas);
             
             surface.draw(
                 canvas,
@@ -140,6 +140,6 @@ pub(crate) fn image_to_skia(image: &CacheableImage) -> skia_safe::Image {
     ).unwrap()
 }
 
-pub(crate) fn svg_to_skia(svg: &CacheableSvg, font_mgr: FontMgr) -> Dom {
-    Dom::from_bytes(&svg.bytes(), font_mgr).unwrap()
+pub(crate) fn svg_to_skia(svg: &CacheableSvg, font_mgr: FontMgr) /*-> Dom*/ {
+    //Dom::from_bytes(&svg.bytes(), font_mgr).unwrap()
 }

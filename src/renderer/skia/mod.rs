@@ -32,7 +32,7 @@ pub struct SkiaRenderer {
     font_mgr: FontMgr,
     default_font: RefCell<Option<Typeface>>,
     image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>,
-    svg_cache: RefCell<HashMap<Uuid, skia_safe::svg::Dom>>
+//    svg_cache: RefCell<HashMap<Uuid, skia_safe::svg::Dom>>
 }
 
 impl SkiaRenderer {
@@ -43,7 +43,7 @@ impl SkiaRenderer {
             font_mgr: FontMgr::new(),
             default_font: RefCell::new(None),
             image_cache: RefCell::new(HashMap::new()),
-            svg_cache: RefCell::new(HashMap::new())
+//            svg_cache: RefCell::new(HashMap::new())
         })
     }
 
@@ -71,7 +71,7 @@ impl SkiaRenderer {
             skia_image
         }
     }
-
+/*
     pub fn get_or_load_svg(&self, svg: &CacheableSvg) -> skia_safe::svg::Dom {
         let mut cache = self.svg_cache.borrow_mut();
 
@@ -83,7 +83,7 @@ impl SkiaRenderer {
             cache.insert(*svg.uuid(), skia_svg.clone());
             skia_svg
         }
-    }
+    } */
 
     pub fn get_font_mgr(&self) -> FontMgr {
         self.font_mgr.clone()
@@ -142,11 +142,11 @@ impl Renderer for SkiaRenderer {
     fn load_svg(&self, svg: &CacheableSvg) {
         let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
 
-        self.svg_cache.borrow_mut().insert(*svg.uuid(), skia_svg);
+//        self.svg_cache.borrow_mut().insert(*svg.uuid(), skia_svg);
     }
 
     fn unload_svg(&self, svg: &CacheableSvg) {
-        self.svg_cache.borrow_mut().remove(svg.uuid());
+//        self.svg_cache.borrow_mut().remove(svg.uuid());
     }
 }
 

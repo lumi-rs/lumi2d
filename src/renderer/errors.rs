@@ -12,7 +12,19 @@ pub enum RendererError {
     #[error("No renderer could be created! Unable to continue!")]
     NoRenderer,
     #[error("Could not get required window handles!")]
-    WindowHandles
+    WindowHandles,
+    #[error(transparent)]
+    Register(#[from] RegisterError)
+}
+
+#[derive(Debug, Error)]
+pub enum RegisterError {
+    #[error("Error loading font: {0}")]
+    Font(String),
+    #[error("Error loading image: {0}")]
+    Image(String),
+    #[error("Error loading SVG: {0}")]
+    Svg(String)
 }
 
 #[cfg(feature = "r-skia")]

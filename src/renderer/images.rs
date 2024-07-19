@@ -4,6 +4,8 @@ use uuid::Uuid;
 
 use crate::backend::windows::Dimensions;
 
+use super::RResult;
+
 
 /// ### A cheap to clone, decoded Image container.
 /// Stores:
@@ -31,7 +33,7 @@ impl CacheableImage {
     /// This uses either Skia's built in image decoding, if `r-skia` is enabled, or the `image` crate, if the `image` feature is enabled.  
     /// If neither are enabled, this will panic.
     #[allow(unreachable_code)]
-    pub fn from_encoded(bytes: &[u8]) -> Self {
+    pub fn from_encoded(bytes: &[u8]) -> RResult<Self> {
         #[cfg(feature = "r-skia")]
         return Self::from_bytes_skia(bytes);
         #[cfg(feature = "image")]
@@ -41,45 +43,51 @@ impl CacheableImage {
     }
 
     #[cfg(feature = "image")]
-    pub fn from_image(image: image::DynamicImage) -> Self {
+    pub fn from_image(image: image::DynamicImage) -> RResult<Self> {
         let dimensions = Dimensions::new(image.width(), image.height());
         let pixels = Arc::from_iter(image.into_rgba8().into_vec());
 
-        Self::new(
+        Ok(Self::new(
             pixels,
             PixelFormat::RGBA8,
             dimensions
-        )
+        ))
     }
 
     #[cfg(feature = "image")]
-    pub fn from_bytes_image(bytes: &[u8]) -> Self {
-        let image = image::load_from_memory(bytes).unwrap();
+    pub fn from_bytes_image(bytes: &[u8]) -> RResult<Self> {
+        use super::errors::RegisterError;
+
+        let image = image::load_from_memory(bytes)
+        .map_err(|err| RegisterError::Image(err.to_string()))?;
 
         Self::from_image(image)
     }
 
     #[cfg(feature = "r-skia")]
-    pub fn from_bytes_skia(bytes: &[u8]) -> Self {
+    pub fn from_bytes_skia(bytes: &[u8]) -> RResult<Self> {
+        use super::errors::RegisterError;
+
         let data = unsafe { skia_safe::Data::new_bytes(bytes) };
-        let image = skia_safe::Image::from_encoded(data).unwrap();
+        let image = skia_safe::Image::from_encoded(data)
+        .ok_or(RegisterError::Image("Failed to decode image".to_string()))?;
         
         let info = image.image_info()
         .with_color_type(skia_safe::ColorType::RGBA8888)
         .with_alpha_type(skia_safe::AlphaType::Unpremul);
         let byte_size = info.compute_byte_size(info.min_row_bytes());
 
-        let mut pixels = vec![0u8; byte_size];
+        let mut read_pixels = vec![0u8; byte_size];
 
-        image.read_pixels(&info, &mut pixels, info.min_row_bytes(), (0, 0), skia_safe::image::CachingHint::Allow);
+        image.read_pixels(&info, &mut read_pixels, info.min_row_bytes(), (0, 0), skia_safe::image::CachingHint::Allow);
 
-        let pixels = Arc::from_iter(pixels);
+        let pixels = Arc::from_iter(read_pixels);
 
-        Self::new(
+        Ok(Self::new(
             pixels,
             PixelFormat::RGBA8,
             Dimensions::new(info.width() as u32, info.height() as u32)
-        )
+        ))
     }
 
     pub fn new(pixels: Arc<[u8]>, format: PixelFormat, dimensions: Dimensions) -> Self {
