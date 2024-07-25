@@ -4,7 +4,7 @@ use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowH
 
 use crate::{renderer::{RResult, Renderer, Renderers}, Objects};
 
-use super::{events::WindowEvents, Backend};
+use super::events::WindowEvents;
 #[cfg(feature = "b-glfw")]
 use super::GlfwWindow;
 #[cfg(feature = "b-winit")]
@@ -49,12 +49,7 @@ impl BackendWindows<'_> {
     pub fn run(&self, renderer: &Renderers, mut frame_callback: impl FnMut(Vec<WindowEvents>) -> Vec<Objects>) {
         loop {
             let events = self.flush_events();
-            if events.contains(&WindowEvents::CloseRequested) {
-                match self {
-                    BackendWindows::WinitWindow(w_window) => w_window.backend.exit(),
-                }
-                break;
-            }
+            
             if events.contains(&WindowEvents::Redraw) {
                 renderer.recreate(self);
             }

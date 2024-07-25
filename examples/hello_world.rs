@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{windows::WindowDetails, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, Renderer}, Objects};
+use lumi2d::{backend::{events::WindowEvents, windows::WindowDetails, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, Renderer}, Objects};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -30,9 +30,12 @@ fn main() {
         let svg = CacheableSvg::new_cloned(svg_bytes);
 
 
-        window.run(&renderer, |_events| {
+        window.run(&renderer, |events| {
             //debug!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
+            if events.contains(&WindowEvents::CloseRequested) {
+                backend.exit();
+            }
 
             Vec::from([
                 Objects::text(90, 100, 10, 10, "t  r  a  n  s  p  a  r  e  n  c  y".to_string(), Some("Nunito".to_string()), 22, 0x88AAFFFF),
