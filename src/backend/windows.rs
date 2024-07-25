@@ -46,7 +46,7 @@ pub enum BackendWindows<'a> {
 }
 
 impl BackendWindows<'_> {
-    pub fn run(&self, renderer: Renderers, mut frame_callback: impl FnMut(Vec<WindowEvents>) -> Vec<Objects>) {
+    pub fn run(&self, renderer: &Renderers, mut frame_callback: impl FnMut(Vec<WindowEvents>) -> Vec<Objects>) {
         loop {
             let events = self.flush_events();
             if events.contains(&WindowEvents::CloseRequested) {

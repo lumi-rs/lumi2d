@@ -30,7 +30,7 @@ fn main() {
         let svg = CacheableSvg::new_cloned(svg_bytes);
 
 
-        window.run(renderer, |_events| {
+        window.run(&renderer, |_events| {
             //debug!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
 
