@@ -1,6 +1,6 @@
-use std::{cell::RefCell, collections::HashMap};
+use std::{cell::{Cell, RefCell}, collections::HashMap};
 
-use crate::{backend::windows::BackendWindows, Objects};
+use crate::{backend::windows::{BackendWindow, BackendWindows}, Objects};
 
 use super::{errors::RendererError, images::CacheableImage, svgs::CacheableSvg, RResult, Renderer};
 
@@ -32,7 +32,8 @@ pub struct SkiaRenderer {
     font_mgr: FontMgr,
     default_font: RefCell<Option<Typeface>>,
     image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>,
-    svg_cache: RefCell<HashMap<Uuid, skia_safe::svg::Dom>>
+    svg_cache: RefCell<HashMap<Uuid, skia_safe::svg::Dom>>,
+    scale: Cell<f32>
 }
 
 impl SkiaRenderer {
@@ -43,7 +44,8 @@ impl SkiaRenderer {
             font_mgr: FontMgr::new(),
             default_font: RefCell::new(None),
             image_cache: RefCell::new(HashMap::new()),
-            svg_cache: RefCell::new(HashMap::new())
+            svg_cache: RefCell::new(HashMap::new()),
+            scale: Cell::new(window.target_scale())
         })
     }
 
@@ -147,6 +149,14 @@ impl Renderer for SkiaRenderer {
 
     fn unload_svg(&self, svg: &CacheableSvg) {
         self.svg_cache.borrow_mut().remove(svg.uuid());
+    }
+
+    fn scale(&self) -> f32 {
+        self.scale.get()
+    }
+
+    fn set_scale(&self, scale: f32) {
+        self.scale.set(scale);
     }
 }
 

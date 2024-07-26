@@ -88,4 +88,6 @@ pub trait Renderer {
     fn load_svg(&self, svg: &CacheableSvg);
     /// Remove an SVG from the Renderer's cache. Needs to be called manually if the SVG should not be loaded permanently (for now).
     fn unload_svg(&self, svg: &CacheableSvg);
+    fn scale(&self) -> f32;
+    fn set_scale(&self, scale: f32);
 }

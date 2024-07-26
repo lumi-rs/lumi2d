@@ -145,6 +145,10 @@ impl BackendWindow for WinitWindow<'_> {
 
         events
     }
+
+    fn target_scale(&self) -> f32 {
+        self.window.scale_factor() as f32
+    }
 }
 
 
