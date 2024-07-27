@@ -13,6 +13,7 @@ use self::winit::*;
 
 pub mod windows;
 pub mod events;
+pub mod keys;
 pub mod errors;
 #[cfg(feature = "b-winit")]
 pub mod winit;
