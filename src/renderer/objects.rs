@@ -1,10 +1,12 @@
 use std::ops::Mul;
 
-use super::{images::CacheableImage, svgs::CacheableSvg, Renderers, Renderer};
+use crate::backend::windows::{BackendWindow, BackendWindows};
+
+use super::{images::CacheableImage, svgs::CacheableSvg};
 
 pub enum Objects {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
-    Text { text: String, font: Option<String>, size: u32, color: u32, rect: Rect },
+    Text { text: String, font: Option<String>, size: f32, color: u32, rect: Rect },
     Image { rect: Rect, image: CacheableImage },
     Svg { rect: Rect, svg: CacheableSvg, color: u32, scale: (f32, f32) }
 }
@@ -53,7 +55,7 @@ impl Objects {
     }
 
     /// Shorthand function for creating an `Objects::Text` with the given properties.
-    pub fn text(x: u32, y: u32, width: u32, height: u32, text: String, font: Option<String>, size: u32, color: u32) -> Objects {
+    pub fn text(x: u32, y: u32, width: u32, height: u32, text: String, font: Option<String>, size: f32, color: u32) -> Objects {
         Objects::Text { text, font, color, size, rect: Self::rect(x, y, width, height) }
     }
 
@@ -69,8 +71,8 @@ impl Objects {
         Objects::Svg { rect: Self::rect(x, y, width, height), svg, color, scale }
     }
 
-    pub fn scale_with(self, renderer: Renderers) -> Self {
-        self * renderer.scale()
+    pub fn scale_with(self, window: &BackendWindows) -> Self {
+        self * window.current_scale()
     }
 }
 
@@ -85,7 +87,7 @@ impl Mul<f32> for Objects {
                 rounding, color, rect: rect * with
             },
             Objects::Text { text, font, size, color, rect } => Objects::Text {
-                text, font, size, color, rect: rect * with
+                text, font, size: size * with, color, rect: rect * with
             } ,
             Objects::Image { rect, image } => Objects::Image {
                 rect: rect * with, image

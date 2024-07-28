@@ -73,6 +73,8 @@ pub trait BackendWindow {
     fn set_mode(&self, window_mode: WindowModes);
     fn flush_events(&self) -> Vec<WindowEvents>;
     fn target_scale(&self) -> f32;
+    fn current_scale(&self) -> f32;
+    fn set_scale(&self, scale: f32);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -1,4 +1,4 @@
-use std::{cell::RefCell, ffi::c_void, sync::mpsc::{self, Receiver, Sender}};
+use std::{cell::{Cell, RefCell}, ffi::c_void, sync::mpsc::{self, Receiver, Sender}};
 
 use log::*;
 use raw_window_handle::HandleError;
@@ -67,6 +67,7 @@ impl Backend for WinitBackend {
         if let Some(WinitResponse::CreateWindow(window)) = self.receive_response() {
             BackendWindows::WinitWindow(WinitWindow { 
                 backend: self,
+                scale: Cell::new(window.scale_factor() as f32),
                 window
             })
         } else {
@@ -86,8 +87,9 @@ impl Backend for WinitBackend {
 
 #[derive(Debug)]
 pub struct WinitWindow<'backend> {
-    pub backend: &'backend WinitBackend,
-    pub window: Window
+    backend: &'backend WinitBackend,
+    window: Window,
+    scale: Cell<f32>
 }
 
 impl BackendWindow for WinitWindow<'_> {
@@ -150,6 +152,14 @@ impl BackendWindow for WinitWindow<'_> {
 
     fn target_scale(&self) -> f32 {
         self.window.scale_factor() as f32
+    }
+
+    fn current_scale(&self) -> f32 {
+        self.scale.get()
+    }
+
+    fn set_scale(&self, scale: f32) {
+        self.scale.set(scale);
     }
 }
 
@@ -234,6 +244,10 @@ impl ApplicationHandler<WinitMessage> for WinitApp {
                     // TODO: Handle this properly
                     // println!("{event:?}");
                     return;
+                },
+                WindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => {
+                    // TODO
+                    return
                 },
                 _event => {
                     // debug!("{:?}", event);

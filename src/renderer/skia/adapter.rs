@@ -1,12 +1,10 @@
 use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
-use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg, Renderer}, Objects};
+use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Objects};
 
 use super::SkiaRenderer;
 
-pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects) {
-    let scale = renderer.scale();
-
+pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects, scale: f32) {
     match object * scale {
         Objects::Rectangle { rounding, color, rect } => {
             let paint = paint(color, 1.0);
@@ -35,7 +33,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             let typeface = renderer.get_font(font).unwrap();
             let paint = paint(color, 0.0);
 
-            let mut skia_font = Font::from_typeface(typeface, size as f32 * scale);
+            let mut skia_font = Font::from_typeface(typeface, size as f32);
             skia_font.set_edging(skia_safe::font::Edging::SubpixelAntiAlias);
             skia_font.set_hinting(skia_safe::FontHinting::Slight);
             skia_font.set_baseline_snap(true);
@@ -45,7 +43,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
 
             canvas.draw_text_blob(
                 text_blob,
-                (rect.x as f32, (rect.y + size) as f32),
+                (rect.x as f32, (rect.y as f32 + size)),
                 &paint
             );
         },
