@@ -25,4 +25,6 @@ pub enum WindowEvents {
     /// true == focused
     FocusChange(bool),
     FileDropped(PathBuf),
+    /// new scale
+    ScaleFactor(f32)
 }

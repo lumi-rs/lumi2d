@@ -5,10 +5,9 @@ use raw_window_handle::HandleError;
 use winit::{
     application::ApplicationHandler,
     dpi::PhysicalSize,
-    event::{ElementState, WindowEvent},
+    event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent},
     event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy},
     keyboard::Key,
-    event::{MouseButton, MouseScrollDelta},
     window::{Fullscreen, Window, WindowAttributes, WindowId}
 };
 
@@ -92,6 +91,79 @@ pub struct WinitWindow<'backend> {
     scale: Cell<f32>
 }
 
+impl WinitWindow<'_> {
+    fn convert_event(&self, event: EventTypes) -> Option<WindowEvents> {
+        Some(match event {
+            EventTypes::Custom(e) => e,
+            EventTypes::Winit(e) => match e {
+                WindowEvent::RedrawRequested => WindowEvents::Redraw,
+                WindowEvent::CloseRequested => WindowEvents::CloseRequested,
+                WindowEvent::DroppedFile(path) => WindowEvents::FileDropped(path),
+                WindowEvent::Focused(focus) => WindowEvents::FocusChange(focus),
+                WindowEvent::CursorMoved { position, .. } => {
+                    let (x, y) = (position.x.round() as _, position.y.round() as _);
+
+                    WindowEvents::CursorPos(x, y)
+                },
+                WindowEvent::Resized(size) => {
+                    // TODO: Scaling
+                    WindowEvents::Resize(size.width, size.height)
+                },
+                WindowEvent::KeyboardInput { device_id: _, event, is_synthetic } => {
+                    if is_synthetic { return None; } // I hope this is correct...
+
+                    let state = match event.state {
+                        ElementState::Pressed => if event.repeat { KeyAction::Hold } else { KeyAction::Press }
+                        ElementState::Released => KeyAction::Release
+                    };
+                    let text = if let Key::Character(c) = event.logical_key {
+                        Some(c)
+                    } else { None };
+
+                    // TODO: Modifiers
+                    WindowEvents::Key(event.physical_key.into(), text, state, Modifiers::empty())
+                },
+                WindowEvent::MouseInput { device_id: _, state, button } => {
+                    let button_num = match button {
+                        MouseButton::Left => 1,
+                        MouseButton::Right => 2,
+                        MouseButton::Middle => 3,
+                        MouseButton::Back => 4,
+                        MouseButton::Forward => 5,
+                        MouseButton::Other(num) => num.into(),
+                    };
+                    let state = match state {
+                        ElementState::Pressed => KeyAction::Press,
+                        ElementState::Released => KeyAction::Release,
+                    };
+
+                    WindowEvents::MouseButton(button_num, state)
+                },
+                WindowEvent::MouseWheel { device_id: _, delta, phase: _ } => {
+                    let (x, y) = match delta {
+                        MouseScrollDelta::LineDelta(x, y) => (x as i32 * 10, y as i32 * 10), // TODO: Adjust
+                        MouseScrollDelta::PixelDelta(pos) => (pos.x as _, pos.y as _),
+                    };
+
+                    WindowEvents::MouseScroll(x, y)
+                },
+                WindowEvent::Touch(_event) => {
+                    // TODO: Handle this properly
+                    // println!("{event:?}");
+                    return None;
+                },
+                WindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer: _ } => {
+                    WindowEvents::ScaleFactor(scale_factor as _)
+                },
+                _event => {
+                    // debug!("{:?}", event);
+                    return None;
+                }
+            }
+        })
+    }
+}
+
 impl BackendWindow for WinitWindow<'_> {
     fn handles(&self) -> Result<WindowHandles, HandleError> {
         WindowHandles::from(&self.window)
@@ -140,8 +212,8 @@ impl BackendWindow for WinitWindow<'_> {
                 |event| event.window == self.window.id()
             )
         )
-        .map(
-            |opt| opt.take().unwrap().event
+        .filter_map(
+            |opt| self.convert_event(opt.take().unwrap().event)
         )
         .collect();
 
@@ -160,6 +232,15 @@ impl BackendWindow for WinitWindow<'_> {
 
     fn set_scale(&self, scale: f32) {
         self.scale.set(scale);
+    }
+
+    fn send_event(&self, event: WindowEvents) {
+        let e = WinitEvent {
+            window: self.window.id(),
+            event: EventTypes::Custom(event)
+        };
+
+        self.backend.events.borrow_mut().push(Some(e));
     }
 }
 
@@ -184,76 +265,7 @@ impl ApplicationHandler<WinitMessage> for WinitApp {
     fn window_event(&mut self, _event_loop: &ActiveEventLoop, window_id: WindowId, event: WindowEvent) {
         self.event_sender.send(WinitEvent {
             window: window_id,
-            event: match event {
-                WindowEvent::RedrawRequested => {
-                    WindowEvents::Redraw
-                },
-                WindowEvent::CursorMoved { position, .. } => {
-                    let (x, y) = (position.x.round() as _, position.y.round() as _);
-
-                    WindowEvents::CursorPos(x, y)
-                },
-                WindowEvent::CloseRequested => {
-                    WindowEvents::CloseRequested
-                },
-                WindowEvent::DroppedFile(path) => WindowEvents::FileDropped(path),
-                WindowEvent::Focused(focus) => WindowEvents::FocusChange(focus),
-                WindowEvent::Resized(size) => {
-                    // TODO: Scaling
-                    WindowEvents::Resize(size.width, size.height)
-                },
-                WindowEvent::KeyboardInput { device_id: _, event, is_synthetic } => {
-                    if is_synthetic { return; } // I hope this is correct...
-
-                    let state = match event.state {
-                        ElementState::Pressed => if event.repeat { KeyAction::Hold } else { KeyAction::Press }
-                        ElementState::Released => KeyAction::Release
-                    };
-                    let text = if let Key::Character(c) = event.logical_key {
-                        Some(c)
-                    } else { None };
-
-                    // TODO: Modifiers
-                    WindowEvents::Key(event.physical_key.into(), text, state, Modifiers::empty())
-                },
-                WindowEvent::MouseInput { device_id: _, state, button } => {
-                    let button_num = match button {
-                        MouseButton::Left => 1,
-                        MouseButton::Right => 2,
-                        MouseButton::Middle => 3,
-                        MouseButton::Back => 4,
-                        MouseButton::Forward => 5,
-                        MouseButton::Other(num) => num as u32,
-                    };
-                    let state = match state {
-                        ElementState::Pressed => KeyAction::Press,
-                        ElementState::Released => KeyAction::Release,
-                    };
-
-                    WindowEvents::MouseButton(button_num, state)
-                },
-                WindowEvent::MouseWheel { device_id: _, delta, phase: _ } => {
-                    let (x, y) = match delta {
-                        MouseScrollDelta::LineDelta(x, y) => (x as i32 * 10, y as i32 * 10), // TODO: Adjust
-                        MouseScrollDelta::PixelDelta(pos) => (pos.x as _, pos.y as _),
-                    };
-
-                    WindowEvents::MouseScroll(x, y)
-                },
-                WindowEvent::Touch(_event) => {
-                    // TODO: Handle this properly
-                    // println!("{event:?}");
-                    return;
-                },
-                WindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer } => {
-                    // TODO
-                    return
-                },
-                _event => {
-                    // debug!("{:?}", event);
-                    return;
-                }
-            }
+            event: EventTypes::Winit(event)
         }).ok();
     }
 
@@ -297,7 +309,13 @@ impl ApplicationHandler<WinitMessage> for WinitApp {
 #[derive(Debug)]
 struct WinitEvent {
     window: WindowId,
-    event: WindowEvents
+    event: EventTypes
+}
+
+#[derive(Debug)]
+enum EventTypes {
+    Winit(WindowEvent),
+    Custom(WindowEvents)
 }
 
 #[derive(Debug)]

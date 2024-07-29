@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvents, windows::WindowDetails, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, Renderer}, Objects};
+use lumi2d::{backend::{events::WindowEvents, windows::{BackendWindow, WindowDetails}, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, Renderer}, Objects};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -35,6 +35,11 @@ fn main() {
             last_frame = Instant::now();
             if events.contains(&WindowEvents::CloseRequested) {
                 backend.exit();
+            }
+            for e in events {
+                if let WindowEvents::MouseScroll(_, y) = e {
+                    window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
+                }
             }
 
             Vec::from([
