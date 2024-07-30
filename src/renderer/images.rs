@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use uuid::Uuid;
 
-use crate::backend::windows::Dimensions;
+use crate::structs::Dimensions;
 
 
 /// ### A cheap to clone, decoded Image container.

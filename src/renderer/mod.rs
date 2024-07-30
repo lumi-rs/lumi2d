@@ -19,10 +19,6 @@ pub mod skia;
 use crate::{backend::windows::BackendWindows, Objects};
 
 use self::errors::RendererError;
-#[cfg(feature = "r-wgpu")]
-use self::wgpu::WgpuRenderer;
-#[cfg(feature = "r-skia")]
-use self::skia::SkiaRenderer;
 
 pub type RResult<T> = core::result::Result<T, RendererError>;
 
@@ -44,9 +40,9 @@ impl Default for RendererTypes {
 #[enum_dispatch(Renderer)]
 pub enum Renderers {
     #[cfg(feature = "r-wgpu")]
-    Wgpu(WgpuRenderer),
+    Wgpu(self::wgpu::WgpuRenderer),
     #[cfg(feature = "r-skia")]
-    Skia(SkiaRenderer),
+    Skia(self::skia::SkiaRenderer),
 }
 
 impl Renderers {
@@ -65,7 +61,7 @@ impl Renderers {
         Ok(match typ {
             #[cfg(feature = "r-skia")]
             RendererTypes::Skia => {
-                Renderers::Skia(SkiaRenderer::new(window)?)
+                Renderers::Skia(self::skia::SkiaRenderer::new(window)?)
             },
         })
     }

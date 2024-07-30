@@ -11,9 +11,9 @@ use winit::{
     window::{Fullscreen, Window, WindowAttributes, WindowId}
 };
 
-use crate::backend::{keys::{KeyAction, Modifiers}, windows::WindowModes};
+use crate::{backend::{keys::{KeyAction, Modifiers}, windows::WindowModes}, structs::Dimensions};
 
-use super::{events::WindowEvents, windows::{BackendWindow, BackendWindows, Dimensions, WindowDetails, WindowHandles}, BResult, Backend, Backends};
+use super::{events::WindowEvents, windows::{BackendWindow, BackendWindows, WindowDetails, WindowHandles}, BResult, Backend, Backends};
 
 
 #[derive(Debug)]

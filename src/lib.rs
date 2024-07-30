@@ -1,5 +1,6 @@
 pub mod backend;
 pub mod renderer;
+pub mod structs;
 
 use std::sync::OnceLock;
 

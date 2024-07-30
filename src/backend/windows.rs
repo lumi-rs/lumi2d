@@ -2,13 +2,9 @@ use enum_dispatch::enum_dispatch;
 use log::warn;
 use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle};
 
-use crate::{renderer::{RResult, Renderer, Renderers}, Objects};
+use crate::{renderer::{RResult, Renderer, Renderers}, structs::Dimensions, Objects};
 
 use super::events::WindowEvents;
-#[cfg(feature = "b-glfw")]
-use super::GlfwWindow;
-#[cfg(feature = "b-winit")]
-use super::WinitWindow;
 
 
 
@@ -40,9 +36,9 @@ pub enum WindowModes {
 #[enum_dispatch(BackendWindow)]
 pub enum BackendWindows<'a> {
     #[cfg(feature = "b-glfw")]
-    GlfwWindow(GlfwWindow<'a>),
+    GlfwWindow(super::GlfwWindow<'a>),
     #[cfg(feature = "b-winit")]
-    WinitWindow(WinitWindow<'a>),
+    WinitWindow(super::WinitWindow<'a>),
 }
 
 impl BackendWindows<'_> {
@@ -79,17 +75,6 @@ pub trait BackendWindow {
     fn send_event(&self, event: WindowEvents);
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Dimensions {
-    pub width: u32,
-    pub height: u32
-}
-
-impl Dimensions {
-    pub fn new(width: u32, height: u32) -> Self {
-        Self { width, height }
-    }
-}
 
 
 #[derive(Debug, Clone)]

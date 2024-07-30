@@ -18,7 +18,7 @@ pub enum WindowEvents {
     /// Key, Text, KeyAction, KeyModifiers
     Key(PhysicalKey, Option<SmolStr>, KeyAction, Modifiers),
     /// x offset, y offset  
-    /// +x is content moving right, +y is content moving down
+    /// +x is content moving right (scroll left), +y is content moving down (scroll up)
     MouseScroll(i32, i32),
     /// width, height
     Resize(u32, u32),
