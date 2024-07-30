@@ -4,7 +4,7 @@ use log::*;
 use raw_window_handle::HandleError;
 use winit::{
     application::ApplicationHandler,
-    dpi::PhysicalSize,
+    dpi::{LogicalSize, PhysicalSize},
     event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent},
     event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy},
     keyboard::Key,
@@ -169,8 +169,13 @@ impl BackendWindow for WinitWindow<'_> {
         WindowHandles::from(&self.window)
     }
 
-    fn dimensions(&self) -> Dimensions {
+    fn physical_dimensions(&self) -> Dimensions {
         let PhysicalSize { width, height} = self.window.inner_size();
+        Dimensions::new(width, height)
+    }
+
+    fn dimensions(&self) -> Dimensions {
+        let LogicalSize { width, height} = self.window.inner_size().to_logical(self.current_scale() as _);
         Dimensions::new(width, height)
     }
 

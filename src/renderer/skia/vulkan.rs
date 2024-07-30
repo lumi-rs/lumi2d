@@ -34,7 +34,7 @@ pub struct SkiaVulkanBackend {
 impl SkiaVulkanBackend {
     pub fn new(window: &BackendWindows) -> RResult<SkiaVulkanBackend> {
         let handles = window.handles().or(Err(RendererError::WindowHandles))?;
-        let dim = window.dimensions();
+        let dim = window.physical_dimensions();
         let present_mode = if crate::vsync() { PresentMode::Fifo } else { PresentMode::Immediate };
 
         let vulkan = VulkanLibrary::new().map_err(VulkanErr::InitLibrary)?;
@@ -224,7 +224,7 @@ impl SkiaRenderingBackend for SkiaVulkanBackend {
     }
 
     fn render(&self, window: &BackendWindows, canvas: impl FnOnce(&Canvas)) -> RResult<()> {
-        let dimensions = window.dimensions();
+        let dimensions = window.physical_dimensions();
         if dimensions.width == 0 || dimensions.height == 0 { return Ok(()) } // Skip frame if window size is zero (e.g. minimized)
 
         let image_extent = [dimensions.width, dimensions.height];

@@ -69,6 +69,7 @@ impl BackendWindows<'_> {
 #[enum_dispatch]
 pub trait BackendWindow {
     fn handles(&self) -> Result<WindowHandles, HandleError>;
+    fn physical_dimensions(&self) -> Dimensions;
     fn dimensions(&self) -> Dimensions;
     fn set_mode(&self, window_mode: WindowModes);
     fn flush_events(&self) -> Vec<WindowEvents>;
