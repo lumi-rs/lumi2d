@@ -4,7 +4,7 @@ use log::*;
 use raw_window_handle::HandleError;
 use winit::{
     application::ApplicationHandler,
-    dpi::{LogicalSize, PhysicalSize},
+    dpi::{LogicalPosition, LogicalSize, PhysicalSize},
     event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent},
     event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy},
     keyboard::Key,
@@ -101,13 +101,19 @@ impl WinitWindow<'_> {
                 WindowEvent::DroppedFile(path) => WindowEvents::FileDropped(path),
                 WindowEvent::Focused(focus) => WindowEvents::FocusChange(focus),
                 WindowEvent::CursorMoved { position, .. } => {
-                    let (x, y) = (position.x.round() as _, position.y.round() as _);
+                    let xy: (u32, u32) = position.to_logical::<f64>(self.current_scale() as _).into();
 
-                    WindowEvents::CursorPos(x, y)
+                    WindowEvents::CursorPos(xy.into())
                 },
                 WindowEvent::Resized(size) => {
-                    // TODO: Scaling
-                    WindowEvents::Resize(size.width, size.height)
+                    let LogicalSize { width, height } = size.to_logical::<u32>(self.current_scale() as _);
+
+                    WindowEvents::WindowSize((width, height).into())
+                },
+                WindowEvent::Moved(position) => {
+                    let LogicalPosition { x, y } = position.to_logical::<i32>(self.current_scale() as _);
+                    
+                    WindowEvents::WindowPos((x, y).into())
                 },
                 WindowEvent::KeyboardInput { device_id: _, event, is_synthetic } => {
                     if is_synthetic { return None; } // I hope this is correct...

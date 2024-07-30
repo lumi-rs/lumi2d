@@ -2,29 +2,31 @@ use std::path::PathBuf;
 
 use smol_str::SmolStr;
 
+use crate::structs::{Dimensions, Position};
+
 use super::keys::*;
 
 
+/// An enum of all the possible events a window can emit.  
+/// All `Position`s and `Dimension`s already take the window's scale factor into account.
 #[derive(Debug, PartialEq)]
 pub enum WindowEvents {
     Redraw,
     CloseRequested,
-    /// x, y
-    CursorPos(u32, u32),
-    /// x, y
-    WindowPos(u32, u32),
+    /// Will not be emitted on Wayland, mobile and web!
+    WindowPos(Position<i32>),
+    WindowSize(Dimensions),
+    CursorPos(Position<u32>),
     // Button number, KeyAction
     MouseButton(u32, KeyAction),
-    /// Key, Text, KeyAction, KeyModifiers
-    Key(PhysicalKey, Option<SmolStr>, KeyAction, Modifiers),
     /// x offset, y offset  
     /// +x is content moving right (scroll left), +y is content moving down (scroll up)
     MouseScroll(i32, i32),
-    /// width, height
-    Resize(u32, u32),
+    /// Key, Text, KeyAction, KeyModifiers
+    Key(PhysicalKey, Option<SmolStr>, KeyAction, Modifiers),
     /// true == focused
     FocusChange(bool),
     FileDropped(PathBuf),
-    /// new scale
+    /// f32 = new scale
     ScaleFactor(f32)
 }

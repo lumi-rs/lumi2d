@@ -1323,6 +1323,7 @@ dependencies = [
  "glutin",
  "image",
  "log",
+ "num-traits",
  "raw-window-handle 0.6.2",
  "simple_logger",
  "skia-safe",
