@@ -29,27 +29,38 @@ fn main() {
         let svg_bytes = include_bytes!("home.svg");
         let svg = CacheableSvg::new_cloned(svg_bytes);
 
-
-        window.run(&renderer, |events| {
-            //debug!("{:?}", Instant::now() - last_frame);
+        backend.subscribe_events(|events| {
+            let frame_time = format!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
-            if events.contains(&WindowEvents::CloseRequested) {
-                backend.exit();
-            }
-            for e in events {
-                if let WindowEvents::MouseScroll(_, y) = e {
-                    window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
+
+            for event in events {
+                match event.event {
+                    WindowEvents::CloseRequested => {
+                        backend.exit();
+                        break;
+                    },
+                    WindowEvents::MouseScroll(_, y) => {
+                        window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
+                    },
+                    WindowEvents::WindowSize(_) => {
+                        renderer.recreate(&window)
+                    },
+                    _ => {}
                 }
             }
 
-            Vec::from([
-                Objects::text(90, 100, 10, 10, "t  r  a  n  s  p  a  r  e  n  c  y".to_string(), Some("Nunito".to_string()), 22.0, 0x88AAFFFF),
-                Objects::rectangle(100, 100, 200, 300, 0xFF9999DD, Some(Rounding::new_uniform(16))),
-                Objects::svg_scaled(20, 20, 0, 0, svg.clone(), 0xFFFFFFFF, (2.0, 2.0)),
-                Objects::text(20, 20, 10, 10, "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
-                Objects::text(100, 400, 10, 10, "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
-                Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
-            ])
+            renderer.render(
+                &window,
+                Vec::from([
+                    Objects::text(90, 100, 10, 10, "t  r  a  n  s  p  a  r  e  n  c  y".to_string(), Some("Nunito".to_string()), 22.0, 0x88AAFFFF),
+                    Objects::rectangle(100, 100, 200, 300, 0xFF9999DD, Some(Rounding::new_uniform(16))),
+                    Objects::svg_scaled(20, 200, 0, 0, svg.clone(), 0xFFFFFFFF, (2.0, 2.0)),
+                    Objects::text(20, 20, 10, 10, "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
+                    Objects::text(100, 400, 10, 10, "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
+                    Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
+                    Objects::text(20, 55, 10, 10, frame_time, None, 16.0, 0xFFFFFFFF)
+                ])
+            ).unwrap();
         });
     }).unwrap();
 }

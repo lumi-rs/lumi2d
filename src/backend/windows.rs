@@ -1,8 +1,7 @@
 use enum_dispatch::enum_dispatch;
-use log::warn;
 use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle};
 
-use crate::{renderer::{RResult, Renderer, Renderers}, structs::Dimensions, Objects};
+use crate::{renderer::{RResult, Renderers}, structs::Dimensions};
 
 use super::events::WindowEvents;
 
@@ -42,6 +41,7 @@ pub enum BackendWindows<'a> {
 }
 
 impl BackendWindows<'_> {
+    /*
     pub fn run(&self, renderer: &Renderers, mut frame_callback: impl FnMut(Vec<WindowEvents>) -> Vec<Objects>) {
         loop {
             let events = self.flush_events();
@@ -54,8 +54,10 @@ impl BackendWindows<'_> {
             if let Err(err) = renderer.render(self, objects) {
                 warn!("Rendering error occured: {err}");
             };
+            std::thread::sleep(std::time::Duration::from_millis(990));
         }
     }
+    */
 
     pub fn create_renderer(&self) -> RResult<Renderers> {
         Renderers::create(self)
@@ -68,11 +70,25 @@ pub trait BackendWindow {
     fn physical_dimensions(&self) -> Dimensions;
     fn dimensions(&self) -> Dimensions;
     fn set_mode(&self, window_mode: WindowModes);
-    fn flush_events(&self) -> Vec<WindowEvents>;
     fn target_scale(&self) -> f32;
     fn current_scale(&self) -> f32;
     fn set_scale(&self, scale: f32);
     fn send_event(&self, event: WindowEvents);
+}
+
+
+
+#[derive(Debug, PartialEq)]
+pub struct BackendEvent {
+    pub event: WindowEvents,
+    pub window_id: WindowIds
+}
+
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum WindowIds {
+    #[cfg(feature = "b-winit")]
+    Winit(winit::window::WindowId)
 }
 
 

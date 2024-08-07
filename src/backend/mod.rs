@@ -3,6 +3,7 @@ use std::ffi::c_void;
 use enum_dispatch::enum_dispatch;
 use log::*;
 use strum::{EnumIter, IntoEnumIterator};
+use windows::BackendEvent;
 
 use self::{errors::{BackendError, BackendInitError}, windows::{BackendWindows, WindowDetails}};
 #[cfg(feature = "b-glfw")]
@@ -81,4 +82,5 @@ pub trait Backend {
     fn create_window(&self, info: WindowDetails) -> BackendWindows;
     fn gl_proc_address(&self, proc_address: &str) -> *const c_void;
     fn exit(&self);
+    fn subscribe_events(&self, callback: impl FnMut(Vec<BackendEvent>));
 }
