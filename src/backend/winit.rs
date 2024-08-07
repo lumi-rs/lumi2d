@@ -260,6 +260,14 @@ impl BackendWindow for WinitWindow<'_> {
     fn send_event(&self, event: WindowEvents) {
         self.backend.event_sender.send(BackendEvent { event, window_id: WindowIds::Winit(self.window.id()) }).ok();
     }
+
+    fn id(&self) -> WindowIds {
+        WindowIds::Winit(self.window.id())
+    }
+
+    fn close(self) {
+        drop(self.window);
+    }
 }
 
 

@@ -74,6 +74,8 @@ pub trait BackendWindow {
     fn current_scale(&self) -> f32;
     fn set_scale(&self, scale: f32);
     fn send_event(&self, event: WindowEvents);
+    fn id(&self) -> WindowIds;
+    fn close(self);
 }
 
 
