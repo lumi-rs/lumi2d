@@ -72,7 +72,7 @@ impl Objects {
         Objects::Image { rect: Self::rect(x, y, width, height), image }
     }
     
-    /// Shorthand function for creating an `Objects::Image` with the given properties.  
+    /// Shorthand function for creating an `Objects::Svg` with the given properties.  
     /// Currently uses relative scaling of the SVG as skia-bindings does not support getting the size from the SVG yet :(  
     /// This means that the final size will be the base svg size multiplied by the scale.
     #[inline]
