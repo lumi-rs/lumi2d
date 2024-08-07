@@ -835,16 +835,15 @@ dependencies = [
 
 [[package]]
 name = "glfw"
-version = "0.56.0"
+version = "0.58.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00f1ee2571a64f93107c3b51a5e3f0b7e04225e345e6496afe7a0df2155c495f"
+checksum = "d1cad81f99085cabd6a4a99403335bc3f3d00d6cf4467e478f13c393ced9259d"
 dependencies = [
- "ash 0.37.3+1.3.251",
+ "ash 0.38.0+1.3.281",
  "bitflags 1.3.2",
  "glfw-sys",
  "objc2",
- "raw-window-handle 0.5.2",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "winapi",
 ]
 
@@ -894,7 +893,7 @@ dependencies = [
  "objc2-app-kit",
  "objc2-foundation",
  "once_cell",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "wayland-sys",
  "windows-sys 0.52.0",
  "x11-dl",
@@ -1324,7 +1323,7 @@ dependencies = [
  "image",
  "log",
  "num-traits",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "simple_logger",
  "skia-safe",
  "smol_str",
@@ -1433,7 +1432,7 @@ dependencies = [
  "log",
  "ndk-sys 0.6.0+11769913",
  "num_enum",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "thiserror",
 ]
 
@@ -2092,12 +2091,6 @@ dependencies = [
  "rayon",
  "rgb",
 ]
-
-[[package]]
-name = "raw-window-handle"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2ff9a1f06a88b01621b7ae906ef0211290d1c8a168a15542486a8f61c0833b9"
 
 [[package]]
 name = "raw-window-handle"
@@ -2911,7 +2904,7 @@ dependencies = [
  "parking_lot",
  "proc-macro2",
  "quote",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "serde",
  "serde_json",
  "slabbin",
@@ -3173,7 +3166,7 @@ dependencies = [
  "naga",
  "parking_lot",
  "profiling",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "smallvec",
  "static_assertions",
  "wasm-bindgen",
@@ -3202,7 +3195,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "profiling",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "rustc-hash",
  "smallvec",
  "thiserror",
@@ -3245,7 +3238,7 @@ dependencies = [
  "parking_lot",
  "profiling",
  "range-alloc",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "renderdoc-sys",
  "rustc-hash",
  "smallvec",
@@ -3570,7 +3563,7 @@ dependencies = [
  "orbclient",
  "percent-encoding",
  "pin-project",
- "raw-window-handle 0.6.2",
+ "raw-window-handle",
  "redox_syscall 0.4.1",
  "rustix",
  "sctk-adwaita",
