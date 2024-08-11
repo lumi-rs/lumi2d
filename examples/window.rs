@@ -4,22 +4,20 @@ fn main() {
     Backends::create(|backend| {
         let window = backend.create_window(Default::default());
         let renderer = window.create_renderer().unwrap();
-
+        
         loop {
-            backend.subscribe_events(|events| {
-                for event in events {
-                    match event.event {
-                        WindowEvents::CloseRequested => {
-                            backend.exit();
-                            break;
-                        },
-                        WindowEvents::Redraw => {
-                            renderer.recreate(&window);
-                        },
-                        _ => {}
-                    }
+            for event in backend.flush_events() {
+                match event.event {
+                    WindowEvents::CloseRequested => {
+                        backend.exit();
+                        break;
+                    },
+                    WindowEvents::Redraw => {
+                        renderer.recreate(&window);
+                    },
+                    _ => {}
                 }
-            });
+            }
 
             renderer.render(&window, Vec::new()).unwrap();
         }

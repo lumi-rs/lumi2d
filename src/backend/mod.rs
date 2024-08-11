@@ -83,4 +83,5 @@ pub trait Backend {
     fn gl_proc_address(&self, proc_address: &str) -> *const c_void;
     fn exit(&self);
     fn subscribe_events(&self, callback: impl FnMut(Vec<BackendEvent>));
+    fn flush_events(&self) -> Vec<BackendEvent>;
 }

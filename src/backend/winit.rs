@@ -90,6 +90,14 @@ impl Backend for WinitBackend {
             callback(events)
         }
     }
+
+    fn flush_events(&self) -> Vec<BackendEvent> {
+        let mut events = Vec::with_capacity(4);
+        while let Ok(event) = self.event_receiver.try_recv() {
+            events.push(event);
+        }
+        events
+    }
 }
 
 
