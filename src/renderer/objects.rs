@@ -1,14 +1,15 @@
 use std::ops::Mul;
 
-use crate::backend::windows::{BackendWindow, BackendWindows};
+use crate::{backend::windows::{BackendWindow, BackendWindows}, structs::Position};
 
-use super::{images::CacheableImage, svgs::CacheableSvg};
+use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraphs};
 
 pub enum Objects {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
-    Text { text: String, font: Option<String>, size: f32, color: u32, rect: Rect },
-    Image { rect: Rect, image: CacheableImage },
-    Svg { rect: Rect, svg: CacheableSvg, color: u32, scale: (f32, f32) }
+    Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<u32>},
+    Paragraph { paragraph: Paragraphs, position: Position<u32> },
+    Image { image: CacheableImage, rect: Rect },
+    Svg { svg: CacheableSvg, color: u32, scale: (f32, f32), rect: Rect }
 }
 
 pub struct Rect {
@@ -62,14 +63,20 @@ impl Objects {
 
     /// Shorthand function for creating an `Objects::Text` with the given properties.
     #[inline]
-    pub fn text(x: u32, y: u32, width: u32, height: u32, text: String, font: Option<String>, size: f32, color: u32) -> Objects {
-        Objects::Text { text, font, color, size, rect: Self::rect(x, y, width, height) }
+    pub fn text(x: u32, y: u32, text: String, font: Option<String>, size: f32, color: u32) -> Objects {
+        Objects::Text { text, font, color, size, position: Position::new(x, y) }
+    }
+
+    /// Shorthand function for creating an `Objects::Paragraph` with the given properties.
+    #[inline]
+    pub fn paragraph(x: u32, y: u32, paragraph: Paragraphs) -> Objects {
+        Objects::Paragraph { position: Position::new(x, y), paragraph }
     }
 
     /// Shorthand function for creating an `Objects::Image` with the given properties.
     #[inline]
     pub fn image(x: u32, y: u32, width: u32, height: u32, image: CacheableImage) -> Objects {
-        Objects::Image { rect: Self::rect(x, y, width, height), image }
+        Objects::Image { image, rect: Self::rect(x, y, width, height) }
     }
     
     /// Shorthand function for creating an `Objects::Svg` with the given properties.  
@@ -77,7 +84,7 @@ impl Objects {
     /// This means that the final size will be the base svg size multiplied by the scale.
     #[inline]
     pub fn svg_scaled(x: u32, y: u32, width: u32, height: u32, svg: CacheableSvg, color: u32, scale: (f32, f32)) -> Objects {
-        Objects::Svg { rect: Self::rect(x, y, width, height), svg, color, scale }
+        Objects::Svg { svg, color, scale, rect: Self::rect(x, y, width, height) }
     }
 
     #[inline]
@@ -96,9 +103,12 @@ impl Mul<f32> for Objects {
             Objects::Rectangle { rounding, color, rect } => Objects::Rectangle {
                 rounding, color, rect: rect * with
             },
-            Objects::Text { text, font, size, color, rect } => Objects::Text {
-                text, font, size: size * with, color, rect: rect * with
-            } ,
+            Objects::Text { text, font, size, color, position } => Objects::Text {
+                text, font, size: size * with, color, position: position * with
+            },
+            Objects::Paragraph { position, paragraph } => Objects::Paragraph {
+                position: position * with, paragraph
+            },
             Objects::Image { rect, image } => Objects::Image {
                 rect: rect * with, image
             },

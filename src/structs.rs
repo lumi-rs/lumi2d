@@ -1,4 +1,4 @@
-use std::ops::Div;
+use std::ops::{Div, Mul};
 
 use num_traits::AsPrimitive;
 
@@ -69,12 +69,27 @@ impl<T, U: Into<T>> From<[U; 2]> for Position<T> {
     }
 }
 
-impl<T: AsPrimitive<f32> + From<f32>> Div<f32> for Position<T>{
+impl<T: AsPrimitive<f32>> Mul<f32> for Position<T>
+    where f32: AsPrimitive<T>
+{
+    type Output = Self;
+
+    fn mul(self, with: f32) -> Self::Output {
+        let [x, y] = [self.x, self.y]
+        .map(|coord| (coord.as_() * with).round().as_());
+
+        Self::new(x, y)
+    }
+}
+
+impl<T: AsPrimitive<f32>> Div<f32> for Position<T>
+    where f32: AsPrimitive<T>
+{
     type Output = Self;
 
     fn div(self, with: f32) -> Self::Output {
         let [x, y] = [self.x, self.y]
-        .map(|coord| (coord.as_() / with).round().into());
+        .map(|coord| (coord.as_() / with).round().as_());
 
         Self::new(x, y)
     }

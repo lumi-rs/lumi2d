@@ -3,12 +3,14 @@ use images::CacheableImage;
 use log::warn;
 use strum::{EnumIter, IntoEnumIterator};
 use svgs::CacheableSvg;
+use text::{Paragraphs, TextOptions};
 
 
 pub mod errors;
 pub mod objects;
 pub mod images;
 pub mod svgs;
+pub mod text;
 
 #[cfg(feature = "r-wgpu")]
 pub mod wgpu;
@@ -64,6 +66,10 @@ impl Renderers {
                 Renderers::Skia(self::skia::SkiaRenderer::new(window)?)
             },
         })
+    }
+
+    pub fn create_paragraph(&self, text: String, width: u32, options: TextOptions) -> Paragraphs {
+        Paragraphs::new(self, text, width, options)
     }
 }
 

@@ -47,7 +47,7 @@ fn main() {
             for (index, (window, renderer)) in windows.iter().enumerate() {
                 renderer.render(
                     window, 
-                    vec![Objects::text(10, 10, 0, 0, index.to_string(), None, 50.0, 0xFFFFFFFF)]
+                    vec![Objects::text(10, 10, index.to_string(), None, 50.0, 0xFFFFFFFF)]
                 ).unwrap();
             }
         });

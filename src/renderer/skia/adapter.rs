@@ -1,11 +1,13 @@
+use std::sync::Arc;
+
 use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
 use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Objects};
 
-use super::SkiaRenderer;
+use super::{text::SkiaParapgraph, SkiaRenderer};
 
 pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects, scale: f32) {
-    match object * scale {
+    match object {
         Objects::Rectangle { rounding, color, rect } => {
             let paint = paint(color, 1.0);
             
@@ -29,7 +31,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
                 &paint
             );
         },
-        Objects::Text { text, font, size, color, rect } => {
+        Objects::Text { text, font, size, color, position } => {
             let typeface = renderer.get_font(font).unwrap();
             let paint = paint(color, 0.0);
 
@@ -43,9 +45,14 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
 
             canvas.draw_text_blob(
                 text_blob,
-                (rect.x as f32, (rect.y as f32 + size)),
+                (position.x as f32, (position.y as f32 + size)),
                 &paint
             );
+        },
+        Objects::Paragraph { position, paragraph } => {
+            let paragraph: Arc<SkiaParapgraph> = paragraph.try_into().unwrap();
+
+            paragraph.paragraph.paint(canvas, (position.x as i32, position.y as i32));
         },
         Objects::Image { rect, image } => {
             let skia_image = renderer.get_or_load_image(&image);
@@ -66,7 +73,8 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
                 None
             );
         },
-        Objects::Svg { rect, svg, color, scale } => {
+        Objects::Svg { rect, svg, color, scale: (x_scale, y_scale) } => {
+            let rect = rect * scale;
             let dom = renderer.get_or_load_svg(&svg);
             let mut paint = paint(color, 0.0);
 
@@ -75,15 +83,18 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
 
             paint.set_color_filter(color_filters::blend(rgba_to_color4f(color).to_color(), BlendMode::SrcIn));
 
-            svg_canvas.scale(scale);
+            svg_canvas.scale((x_scale * scale, y_scale * scale));
             dom.render(svg_canvas);
             
+            canvas.save();
+            canvas.reset_matrix();
             surface.draw(
                 canvas,
                 (rect.x as f32, rect.y as f32),
                 SamplingOptions::default(),
                 Some(&paint)
             );
+            canvas.restore();
         }
     }
 }

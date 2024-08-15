@@ -20,7 +20,7 @@ fn main() {
 
         let renderer = window.create_renderer().unwrap();
         let font_bytes = include_bytes!("/home/der/Programering2/yetalauncher/resources/fonts/Nunito-Medium.ttf");
-        renderer.register_font(font_bytes, "Nunito");
+        renderer.register_font(font_bytes, "Nunit");
         let mut last_frame = Instant::now();
 
         let image_bytes = include_bytes!("/home/der/Downloads/cat/album_2024-05-08_21-21-49.gif");
@@ -28,6 +28,9 @@ fn main() {
 
         let svg_bytes = include_bytes!("home.svg");
         let svg = CacheableSvg::new_cloned(svg_bytes);
+
+        let lorem_ipsum = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
+        let paragraph = renderer.create_paragraph(lorem_ipsum.to_string(), 400, Default::default());
 
         backend.subscribe_events(|events| {
             let frame_time = format!("{:?}", Instant::now() - last_frame);
@@ -52,13 +55,14 @@ fn main() {
             renderer.render(
                 &window,
                 Vec::from([
-                    Objects::text(90, 100, 10, 10, "t  r  a  n  s  p  a  r  e  n  c  y".to_string(), Some("Nunito".to_string()), 22.0, 0x88AAFFFF),
-                    Objects::rectangle(100, 100, 200, 300, 0xFF9999DD, Some(Rounding::new_uniform(16))),
+                    Objects::text(90, 100, "t  r  a  n  s  p  a  r  e  n  c  y".to_string(), Some("Nunito".to_string()), 22.0, 0x88AAFFFF),
+                    Objects::rectangle(100, 100, 200, 300,  0xFF9999DD, Some(Rounding::new_uniform(16))),
                     Objects::svg_scaled(20, 200, 0, 0, svg.clone(), 0xFFFFFFFF, (2.0, 2.0)),
-                    Objects::text(20, 20, 10, 10, "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
-                    Objects::text(100, 400, 10, 10, "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
+                    Objects::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
+                    Objects::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
                     Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
-                    Objects::text(20, 55, 10, 10, frame_time, None, 16.0, 0xFFFFFFFF)
+                    Objects::text(20, 55, frame_time, None, 16.0, 0xFFFFFFFF),
+                    Objects::paragraph(30, 500, paragraph.clone())
                 ])
             ).unwrap();
         });
