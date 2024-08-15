@@ -32,7 +32,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             );
         },
         Objects::Text { text, font, size, color, position } => {
-            let typeface = renderer.get_font(font).unwrap();
+            let typeface = renderer.get_font(&font).unwrap();
             let paint = paint(color, 0.0);
 
             let mut skia_font = Font::from_typeface(typeface, size as f32);

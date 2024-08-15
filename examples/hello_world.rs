@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvents, windows::{BackendWindow, WindowDetails}, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, Renderer}, Objects};
+use lumi2d::{backend::{events::WindowEvents, windows::{BackendWindow, WindowDetails}, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::Paragraph, Renderer}, Objects};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -62,7 +62,8 @@ fn main() {
                     Objects::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
                     Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
                     Objects::text(20, 55, frame_time, None, 16.0, 0xFFFFFFFF),
-                    Objects::paragraph(30, 500, paragraph.clone())
+                    Objects::paragraph(30, 500, paragraph.clone()),
+                    Objects::text(30, 500 + paragraph.height(), paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF)
                 ])
             ).unwrap();
         });

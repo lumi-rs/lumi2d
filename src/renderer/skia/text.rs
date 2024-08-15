@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use skia_safe::textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle};
+use skia_safe::{font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, FontStyle};
 
 use crate::renderer::text::{Paragraph, TextOptions};
 
@@ -15,6 +15,7 @@ pub struct SkiaParapgraph {
 
 impl SkiaParapgraph {
     pub fn new(renderer: &SkiaRenderer, text: String, width: u32, options: TextOptions) -> Self {
+        // TODO: Implement align and overflow
         let paragraph_style = ParagraphStyle::new();
         let mut text_style = TextStyle::new();
         let mut paragraph_builder = ParagraphBuilder::new(&paragraph_style, renderer.font_collection.clone());
@@ -22,9 +23,18 @@ impl SkiaParapgraph {
 
         text_style
         .set_foreground_paint(&paint)
-        .set_font_size(options.size);
+        .set_font_size(options.size)
+        .set_font_style(FontStyle::new(
+            Weight::from(options.weight as i32),
+            Width::NORMAL,
+            if options.italic {
+                Slant::Italic
+            } else {
+                Slant::Upright
+            }
+        ));
 
-        if let Some(font) = renderer.get_font(options.font.clone()) {
+        if let Some(font) = renderer.get_font(&options.font) {
             text_style.set_font_families(&[font.family_name()]);
         }
 

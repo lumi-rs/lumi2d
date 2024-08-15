@@ -57,9 +57,9 @@ impl SkiaRenderer {
         })
     }
 
-    pub fn get_font(&self, alias: Option<String>) -> Option<Typeface> {
+    pub fn get_font(&self, alias: &Option<String>) -> Option<Typeface> {
         if let Some(alias) = alias {
-            if let Some(font) = self.font_map.borrow().get(&alias) {
+            if let Some(font) = self.font_map.borrow().get(alias) {
                 Some(font.clone())
             } else {
                 self.default_font.borrow().clone()

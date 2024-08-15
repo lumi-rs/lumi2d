@@ -79,15 +79,21 @@ impl Backend for WinitBackend {
     }
 
     fn subscribe_events(&self, mut callback: impl FnMut(Vec<BackendEvent>)) {
-        while let Ok(event) = self.event_receiver.recv() {
-            let mut events = Vec::with_capacity(4);
-            events.push(event);
-
-            while let Ok(queued_event) = self.event_receiver.try_recv() {
-                events.push(queued_event);
+        if crate::polling() {
+            loop {
+                callback(self.flush_events());
             }
-
-            callback(events)
+        } else {
+            while let Ok(event) = self.event_receiver.recv() {
+                let mut events = Vec::with_capacity(4);
+                events.push(event);
+    
+                while let Ok(queued_event) = self.event_receiver.try_recv() {
+                    events.push(queued_event);
+                }
+    
+                callback(events)
+            }
         }
     }
 
