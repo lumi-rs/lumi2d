@@ -15,11 +15,11 @@ pub enum Paragraphs {
 }
 
 impl Paragraphs {
-    pub fn new(renderer: &Renderers, text: String, width: u32, options: TextOptions) -> Self {
+    pub fn new(renderer: &Renderers, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Self {
         match renderer {
             #[cfg(feature = "r-skia")]
             Renderers::Skia(r) => Self::Skia(Arc::new(
-                super::skia::text::SkiaParapgraph::new(r, text, width, options)
+                super::skia::text::SkiaParapgraph::new(r, text, width, max_height, options)
             ))
         }
     }
@@ -39,7 +39,23 @@ pub struct TextOptions {
     pub font: Option<String>,
     pub color: u32,
     pub italic: bool,
-    pub underline: bool
+    pub underline: bool,
+    pub wrap: TextWrap,
+    pub overflow: TextOverflow
+}
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub enum TextWrap {
+    NoWrap,
+    #[default]
+    WordWrap
+}
+
+#[derive(Debug, Default, PartialEq, Clone)]
+pub enum TextOverflow {
+    Clip,
+    #[default]
+    Elide
 }
 
 impl Default for TextOptions {
@@ -51,6 +67,8 @@ impl Default for TextOptions {
             color: 0xFFFFFFFF,
             italic: false,
             underline: false,
+            wrap: TextWrap::default(),
+            overflow: TextOverflow::default()
         }
     }
 }

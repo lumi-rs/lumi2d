@@ -30,7 +30,7 @@ fn main() {
         let svg = CacheableSvg::new_cloned(svg_bytes);
 
         let lorem_ipsum = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
-        let paragraph = renderer.create_paragraph(lorem_ipsum.to_string(), 400, Default::default());
+        let paragraph = renderer.create_paragraph(lorem_ipsum.to_string(), 400, Some(120), Default::default());
 
         backend.subscribe_events(|events| {
             let frame_time = format!("{:?}", Instant::now() - last_frame);

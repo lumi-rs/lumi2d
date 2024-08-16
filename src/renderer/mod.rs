@@ -68,8 +68,8 @@ impl Renderers {
         })
     }
 
-    pub fn create_paragraph(&self, text: String, width: u32, options: TextOptions) -> Paragraphs {
-        Paragraphs::new(self, text, width, options)
+    pub fn create_paragraph(&self, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Paragraphs {
+        Paragraphs::new(self, text, width, max_height, options)
     }
 }
 
