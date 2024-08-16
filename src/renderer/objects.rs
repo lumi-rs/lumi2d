@@ -9,7 +9,7 @@ pub enum Objects {
     Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<u32>},
     Paragraph { paragraph: Paragraphs, position: Position<u32> },
     Image { image: CacheableImage, rect: Rect },
-    Svg { svg: CacheableSvg, color: u32, scale: (f32, f32), rect: Rect }
+    Svg { svg: CacheableSvg, color: u32, rect: Rect }
 }
 
 pub struct Rect {
@@ -80,11 +80,9 @@ impl Objects {
     }
     
     /// Shorthand function for creating an `Objects::Svg` with the given properties.  
-    /// Currently uses relative scaling of the SVG as skia-bindings does not support getting the size from the SVG yet :(  
-    /// This means that the final size will be the base svg size multiplied by the scale.
     #[inline]
-    pub fn svg_scaled(x: u32, y: u32, width: u32, height: u32, svg: CacheableSvg, color: u32, scale: (f32, f32)) -> Objects {
-        Objects::Svg { svg, color, scale, rect: Self::rect(x, y, width, height) }
+    pub fn svg(x: u32, y: u32, width: u32, height: u32, svg: CacheableSvg, color: u32) -> Objects {
+        Objects::Svg { svg, color, rect: Self::rect(x, y, width, height) }
     }
 
     #[inline]
@@ -112,8 +110,8 @@ impl Mul<f32> for Objects {
             Objects::Image { rect, image } => Objects::Image {
                 rect: rect * with, image
             },
-            Objects::Svg { rect, svg, color, scale } => Objects::Svg {
-                rect: rect * with, svg, color, scale: (scale.0 * with, scale.1 * with)
+            Objects::Svg { rect, svg, color } => Objects::Svg {
+                rect: rect * with, svg, color
             }
         }
     }
