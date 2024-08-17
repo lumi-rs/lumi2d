@@ -11,9 +11,11 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
         Objects::Rectangle { rounding, color, rect } => {
             let paint = paint(color, 1.0);
             
-            let mut rrect = RRect::new_rect(skia_rect(rect));
-            
+            let skia_rect = skia_rect(rect);
+
             if let Some(r) = rounding {
+                let mut rrect = RRect::new_rect(skia_rect);
+            
                 let radii: [Point; 4] = [
                     (r.top_l, r.top_l),
                     (r.top_r, r.top_r),
@@ -24,12 +26,17 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
                 );
 
                 rrect.set_rect_radii(*rrect.rect(), &radii);
-            }
 
-            canvas.draw_rrect(
-                rrect,
-                &paint
-            );
+                canvas.draw_rrect(
+                    rrect,
+                    &paint
+                );
+            } else {
+                canvas.draw_rect(
+                    skia_rect,
+                    &paint
+                );
+            }
         },
         Objects::Text { text, font, size, color, position } => {
             let typeface = renderer.get_font(&font).unwrap();
@@ -38,7 +45,6 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             let mut skia_font = Font::from_typeface(typeface, size as f32);
             skia_font.set_edging(skia_safe::font::Edging::SubpixelAntiAlias);
             skia_font.set_hinting(skia_safe::FontHinting::Slight);
-            skia_font.set_baseline_snap(true);
             skia_font.set_subpixel(true);
 
             let text_blob = TextBlob::from_str(text, &skia_font).unwrap();
@@ -52,7 +58,10 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
         Objects::Paragraph { position, paragraph } => {
             let paragraph: Arc<SkiaParapgraph> = paragraph.try_into().unwrap();
 
-            paragraph.paragraph.paint(canvas, (position.x as i32, position.y as i32));
+            paragraph.paragraph.paint(
+                canvas, 
+                (position.x as f32, position.y as f32)
+            );
         },
         Objects::Image { rect, image } => {
             let skia_image = renderer.get_or_load_image(&image);
