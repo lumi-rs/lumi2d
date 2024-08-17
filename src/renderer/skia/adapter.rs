@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use skia_safe::{canvas::Lattice, color_filters, svg::Dom, wrapper::PointerWrapper, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
+use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
 use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Objects};
 
@@ -75,22 +75,15 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
         },
         Objects::Svg { rect, svg, color } => {
             let rect = rect * scale;
-            let dom = renderer.get_or_load_svg(&svg);
-            let size = dom.inner().fContainerSize;
+            let mut svg = renderer.get_or_load_svg(&svg, canvas, rect.width, rect.height);
             let mut paint = paint(color, 0.0);
-
-            let mut surface = canvas.new_surface(&canvas.image_info(), None).unwrap();
-            let svg_canvas = surface.canvas();
 
             paint.set_color_filter(color_filters::blend(rgba_to_color4f(color).to_color(), BlendMode::SrcIn));
             paint.set_anti_alias(true);
-
-            svg_canvas.scale((rect.width as f32 / size.fWidth, rect.height as f32 / size.fHeight));
-            dom.render(svg_canvas);
             
             canvas.save();
             canvas.reset_matrix();
-            surface.draw(
+            svg.surface.draw(
                 canvas,
                 (rect.x as f32, rect.y as f32),
                 SamplingOptions::default(),

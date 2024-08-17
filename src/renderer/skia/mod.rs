@@ -17,7 +17,7 @@ pub mod vulkan;
 use enum_dispatch::enum_dispatch;
 use errors::SkiaRendererError;
 use log::warn;
-use skia_safe::{textlayout::{FontCollection, TypefaceFontProvider}, Canvas, Color4f, FontMgr, Typeface};
+use skia_safe::{svg::Dom, textlayout::{FontCollection, TypefaceFontProvider}, wrapper::PointerWrapper, Canvas, Color4f, FontMgr, Typeface};
 use strum::{EnumIter, IntoEnumIterator};
 use uuid::Uuid;
 
@@ -35,7 +35,7 @@ pub struct SkiaRenderer {
     font_provider: TypefaceFontProvider,
     default_font: RefCell<Option<Typeface>>,
     image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>,
-    svg_cache: RefCell<HashMap<Uuid, skia_safe::svg::Dom>>
+    svg_cache: RefCell<HashMap<Uuid, SkiaCachedSvg>>
 }
 
 impl SkiaRenderer {
@@ -82,16 +82,31 @@ impl SkiaRenderer {
         }
     }
 
-    pub fn get_or_load_svg(&self, svg: &CacheableSvg) -> skia_safe::svg::Dom {
+    pub(in super) fn get_or_load_svg(&self, svg: &CacheableSvg, canvas: &Canvas, width: u32, height: u32) -> SvgWithSurface {
         let mut cache = self.svg_cache.borrow_mut();
 
-        if let Some(i) = cache.get(svg.uuid()) {
-            i.clone()
+        if let Some(cached_svg) = cache.get_mut(svg.uuid()) {
+            match cached_svg {
+                SkiaCachedSvg::Surface(svgws) => {
+                    if (svgws.width, svgws.height) != (width, height) {
+                        *svgws = svg_dom_to_with_surface(svgws.dom.clone(), canvas, width, height)
+                    }
+
+                    svgws.clone()
+                },
+                SkiaCachedSvg::Dom(dom) => {
+                    let svg_with_surface = svg_dom_to_with_surface(dom.clone(), canvas, width, height);
+                    *cached_svg = SkiaCachedSvg::Surface(svg_with_surface.clone());
+                    svg_with_surface
+                },
+            }
         } else {
-            let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
+            let dom = adapter::svg_to_skia(svg, self.get_font_mgr());
     
-            cache.insert(*svg.uuid(), skia_svg.clone());
-            skia_svg
+            let svg_with_surface = svg_dom_to_with_surface(dom, canvas, width, height);
+
+            cache.insert(*svg.uuid(), SkiaCachedSvg::Surface(svg_with_surface.clone()));
+            svg_with_surface
         }
     }
 
@@ -155,9 +170,9 @@ impl Renderer for SkiaRenderer {
     }
 
     fn load_svg(&self, svg: &CacheableSvg) {
-        let skia_svg = adapter::svg_to_skia(svg, self.get_font_mgr());
-
-        self.svg_cache.borrow_mut().insert(*svg.uuid(), skia_svg);
+        let dom = adapter::svg_to_skia(svg, self.get_font_mgr());
+        
+        self.svg_cache.borrow_mut().insert(*svg.uuid(), SkiaCachedSvg::Dom(dom));
     }
 
     fn unload_svg(&self, svg: &CacheableSvg) {
@@ -223,4 +238,38 @@ impl SkiaRenderingBackends {
 pub trait SkiaRenderingBackend {
     fn render(&self, window: &BackendWindows, canvas: impl FnOnce(&Canvas)) -> RResult<()>;
     fn recreate(&self, window: &BackendWindows);
+}
+
+
+
+#[derive(Debug, Clone)]
+pub(in super) enum SkiaCachedSvg {
+    Dom(Dom),
+    Surface(SvgWithSurface)
+}
+
+#[derive(Debug, Clone)]
+pub(in super) struct SvgWithSurface {
+    pub dom: Dom,
+    pub surface: skia_safe::Surface,
+    pub width: u32,
+    pub height: u32
+}
+
+// Amazing function name, I know...
+fn svg_dom_to_with_surface(dom: Dom, canvas: &Canvas, width: u32, height: u32) -> SvgWithSurface {
+    let size = dom.inner().fContainerSize;
+
+    let mut surface = canvas.new_surface(&canvas.image_info(), None).unwrap();
+    let svg_canvas = surface.canvas();
+
+    svg_canvas.scale((width as f32 / size.fWidth, height as f32 / size.fHeight));
+    dom.render(svg_canvas);
+
+    SvgWithSurface {
+        dom,
+        surface,
+        width,
+        height
+    }
 }
