@@ -10,20 +10,26 @@ fn main() {
     ).env().init().expect("Failed to initialize logger");
 
     Backend::create(|backend| {
-        // TODO: Don't depend on local paths...
         let window = backend.create_window(WindowDetails {
             width: 800,
             height: 200,
-            title: "Amongus".to_string(),
+            title: "Amogus".to_string(),
             ..Default::default()
         });
 
         let renderer = window.create_renderer().unwrap();
-        let font_bytes = include_bytes!("/home/der/Programering2/yetalauncher/resources/fonts/Nunito-Medium.ttf");
-        renderer.register_font(font_bytes, "Nunit");
+
+        let inter_font = include_bytes!("Inter-Tight.ttf");
+        // Since this is the first registered font, it will be set as the default/fallback font.
+        // If you want to register another font as the default, call renderer.register_default_font instead.
+        renderer.register_font(inter_font, "Inter");
+
+        let jetbrains_font = include_bytes!("JetBrains_Mono.ttf");
+        renderer.register_font(jetbrains_font, "JetBrains Mono");
+
         let mut last_frame = Instant::now();
 
-        let image_bytes = include_bytes!("/home/der/Downloads/cat/album_2024-05-08_21-21-49.gif");
+        let image_bytes = include_bytes!("nori.gif");
         let image = CacheableImage::from_encoded(image_bytes);
 
         let svg_bytes = include_bytes!("home.svg");
@@ -55,13 +61,16 @@ fn main() {
             renderer.render(
                 &window,
                 Vec::from([
-                    Objects::text(90, 100, "t  r  a  n  s  p  a  r  e  n  c  y".to_string(), Some("Nunito".to_string()), 22.0, 0x88AAFFFF),
+                    // Using a specific font
+                    Objects::text(70, 100, "t r a n s p a r e n c y".to_string(), Some("JetBrains Mono".to_string()), 22.0, 0x88AAFFFF),
                     Objects::rectangle(100, 100, 200, 300,  0xFF9999DD, Some(Rounding::new_uniform(16))),
                     Objects::svg(20, 200, 80, 40, svg.clone(), 0xFFAAFFFF),
+                    // Using the default/fallback font
                     Objects::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
                     Objects::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
                     Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
-                    Objects::text(20, 55, frame_time, None, 16.0, 0xFFFFFFFF),
+                    Objects::text(20, 55, frame_time, Some("JetBrains Mono".to_string()), 16.0, 0xFFFFFFFF),
+                    // For multiline text
                     Objects::paragraph(30, 500, paragraph.clone()),
                     Objects::text(30, 500 + paragraph.height(), paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF)
                 ])
