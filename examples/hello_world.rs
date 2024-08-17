@@ -42,14 +42,15 @@ fn main() {
             let frame_time = format!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
 
-            for event in events {
-                match event.event {
+            for backend_event in events {
+                match backend_event.event.scale_with(window.current_scale()) {
                     WindowEvent::CloseRequested => {
                         backend.exit();
                         break;
                     },
                     WindowEvent::MouseScroll(_, y) => {
                         window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
+                        dbg!(window.dimensions());
                     },
                     WindowEvent::WindowSize(_) => {
                         renderer.recreate(&window)

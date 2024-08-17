@@ -33,5 +33,12 @@ pub enum WindowEvent {
 
 
 impl WindowEvent {
-    
+    /// Adjusts the events that are dependant on scale, like CursorPos.
+    pub fn scale_with(self, scale: f32) -> Self {
+        match self {
+            WindowEvent::WindowSize(dim) => WindowEvent::WindowSize(dim / scale),
+            WindowEvent::CursorPos(pos) => WindowEvent::CursorPos(pos / scale),
+            other => other
+        }
+    }
 }
