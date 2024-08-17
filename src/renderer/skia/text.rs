@@ -15,7 +15,6 @@ pub struct SkiaParapgraph {
 
 impl SkiaParapgraph {
     pub fn new(renderer: &SkiaRenderer, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Self {
-        // TODO: Implement align and overflow
         let mut paragraph_style = ParagraphStyle::new();
         let mut text_style = TextStyle::new();
         let paint = paint(options.color, 0.0);
