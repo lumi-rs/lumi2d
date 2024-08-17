@@ -1,13 +1,13 @@
 use std::ops::Mul;
 
-use crate::{backend::windows::{BackendWindow, BackendWindows}, structs::Position};
+use crate::{backend::windows::{WindowTrait, Window}, structs::Position};
 
-use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraphs};
+use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraph};
 
 pub enum Objects {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
     Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<u32>},
-    Paragraph { paragraph: Paragraphs, position: Position<u32> },
+    Paragraph { paragraph: Paragraph, position: Position<u32> },
     Image { image: CacheableImage, rect: Rect },
     Svg { svg: CacheableSvg, color: u32, rect: Rect }
 }
@@ -69,7 +69,7 @@ impl Objects {
 
     /// Shorthand function for creating an `Objects::Paragraph` with the given properties.
     #[inline]
-    pub fn paragraph(x: u32, y: u32, paragraph: Paragraphs) -> Objects {
+    pub fn paragraph(x: u32, y: u32, paragraph: Paragraph) -> Objects {
         Objects::Paragraph { position: Position::new(x, y), paragraph }
     }
 
@@ -86,7 +86,7 @@ impl Objects {
     }
 
     #[inline]
-    pub fn scale_with(self, window: &BackendWindows) -> Self {
+    pub fn scale_with(self, window: &Window) -> Self {
         self * window.current_scale()
     }
 }

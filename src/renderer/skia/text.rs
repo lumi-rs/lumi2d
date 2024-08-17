@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use skia_safe::{font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, Font, FontStyle};
 
-use crate::renderer::text::{Paragraph, TextOptions, TextOverflow, TextWrap};
+use crate::renderer::text::{ParagraphTrait, TextOptions, TextOverflow, TextWrap};
 
 use super::{adapter::paint, SkiaRenderer};
 
@@ -67,7 +67,7 @@ impl SkiaParapgraph {
     }
 }
 
-impl Paragraph for Arc<SkiaParapgraph> {
+impl ParagraphTrait for Arc<SkiaParapgraph> {
     fn options(&self) -> &TextOptions {
         &self.options
     }

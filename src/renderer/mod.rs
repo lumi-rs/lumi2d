@@ -3,7 +3,7 @@ use images::CacheableImage;
 use log::warn;
 use strum::{EnumIter, IntoEnumIterator};
 use svgs::CacheableSvg;
-use text::{Paragraphs, TextOptions};
+use text::{Paragraph, TextOptions};
 
 
 pub mod errors;
@@ -18,7 +18,7 @@ pub mod wgpu;
 pub mod skia;
 
 
-use crate::{backend::windows::BackendWindows, Objects};
+use crate::{backend::windows::Window, Objects};
 
 use self::errors::RendererError;
 
@@ -26,30 +26,30 @@ pub type RResult<T> = core::result::Result<T, RendererError>;
 
 
 #[derive(Debug, EnumIter)]
-pub enum RendererTypes {
+pub enum RendererType {
     #[cfg(feature = "r-wgpu")]
     Wgpu,
     #[cfg(feature = "r-skia")]
     Skia,
 }
 
-impl Default for RendererTypes {
+impl Default for RendererType {
     fn default() -> Self {
-        RendererTypes::iter().next().expect("Lumi2D was compiled without any enabled renderers!")
+        RendererType::iter().next().expect("Lumi2D was compiled without any enabled renderers!")
     }
 }
 
-#[enum_dispatch(Renderer)]
-pub enum Renderers {
+#[enum_dispatch(RendererTrait)]
+pub enum Renderer {
     #[cfg(feature = "r-wgpu")]
     Wgpu(self::wgpu::WgpuRenderer),
     #[cfg(feature = "r-skia")]
     Skia(self::skia::SkiaRenderer),
 }
 
-impl Renderers {
-    pub fn create(window: &BackendWindows) -> RResult<Renderers> {
-        let backends = RendererTypes::iter();
+impl Renderer {
+    pub fn create(window: &Window) -> RResult<Renderer> {
+        let backends = RendererType::iter();
         for typ in backends {
             match Self::create_type(&typ, window) {
                 Ok(backend) => return Ok(backend),
@@ -59,24 +59,24 @@ impl Renderers {
         Err(RendererError::NoRenderer)
     }
 
-    pub fn create_type(typ: &RendererTypes, window: &BackendWindows) -> RResult<Renderers> {
+    pub fn create_type(typ: &RendererType, window: &Window) -> RResult<Renderer> {
         Ok(match typ {
             #[cfg(feature = "r-skia")]
-            RendererTypes::Skia => {
-                Renderers::Skia(self::skia::SkiaRenderer::new(window)?)
+            RendererType::Skia => {
+                Renderer::Skia(self::skia::SkiaRenderer::new(window)?)
             },
         })
     }
 
-    pub fn create_paragraph(&self, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Paragraphs {
-        Paragraphs::new(self, text, width, max_height, options)
+    pub fn create_paragraph(&self, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Paragraph {
+        Paragraph::new(self, text, width, max_height, options)
     }
 }
 
 #[enum_dispatch]
-pub trait Renderer {
-    fn render(&self, window: &BackendWindows, objects: Vec<Objects>) -> RResult<()>;
-    fn recreate(&self, window: &BackendWindows);
+pub trait RendererTrait {
+    fn render(&self, window: &Window, objects: Vec<Objects>) -> RResult<()>;
+    fn recreate(&self, window: &Window);
     /// Register a font to be used with the given alias
     fn register_font(&self, bytes: &[u8], alias: &str);
     /// Register a font to be used with the given alias, and set it as the deafult font.  

@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvents, windows::{BackendWindow, WindowDetails}, Backend, Backends}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::Paragraph, Renderer}, Objects};
+use lumi2d::{backend::{events::WindowEvents, windows::{WindowTrait, WindowDetails}, BackendTrait, Backend}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Objects};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -9,7 +9,7 @@ fn main() {
         LevelFilter::Debug
     ).env().init().expect("Failed to initialize logger");
 
-    Backends::create(|backend| {
+    Backend::create(|backend| {
         // TODO: Don't depend on local paths...
         let window = backend.create_window(WindowDetails {
             width: 800,

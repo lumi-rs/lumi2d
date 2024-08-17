@@ -1,7 +1,7 @@
-use lumi2d::{backend::{events::WindowEvents, Backend, Backends}, renderer::Renderer};
+use lumi2d::{backend::{events::WindowEvents, BackendTrait, Backend}, renderer::RendererTrait};
 
 fn main() {
-    Backends::create(|backend| {
+    Backend::create(|backend| {
         let window = backend.create_window(Default::default());
         let renderer = window.create_renderer().unwrap();
         

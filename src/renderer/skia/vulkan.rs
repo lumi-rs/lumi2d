@@ -10,7 +10,7 @@ use vulkano::{
     format::Format,
     Handle, Validated, VulkanError, VulkanLibrary, VulkanObject
 };
-use crate::{backend::windows::{BackendWindow, BackendWindows}, renderer::{errors::RendererError, skia::errors::VulkanErr, RResult}};
+use crate::{backend::windows::{WindowTrait, Window}, renderer::{errors::RendererError, skia::errors::VulkanErr, RResult}};
 
 use super::SkiaRenderingBackend;
 
@@ -32,7 +32,7 @@ pub struct SkiaVulkanBackend {
 }
 
 impl SkiaVulkanBackend {
-    pub fn new(window: &BackendWindows) -> RResult<SkiaVulkanBackend> {
+    pub fn new(window: &Window) -> RResult<SkiaVulkanBackend> {
         let handles = window.handles().or(Err(RendererError::WindowHandles))?;
         let dim = window.physical_dimensions();
         let present_mode = if crate::vsync() { PresentMode::Fifo } else { PresentMode::Immediate };
@@ -219,11 +219,11 @@ impl SkiaVulkanBackend {
 }
 
 impl SkiaRenderingBackend for SkiaVulkanBackend {
-    fn recreate(&self, _: &BackendWindows) {
+    fn recreate(&self, _: &Window) {
         self.recreate_swapchain.set(true);
     }
 
-    fn render(&self, window: &BackendWindows, canvas: impl FnOnce(&Canvas)) -> RResult<()> {
+    fn render(&self, window: &Window, canvas: impl FnOnce(&Canvas)) -> RResult<()> {
         let dimensions = window.physical_dimensions();
         if dimensions.width == 0 || dimensions.height == 0 { return Ok(()) } // Skip frame if window size is zero (e.g. minimized)
 

@@ -1,7 +1,7 @@
 use enum_dispatch::enum_dispatch;
 use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle};
 
-use crate::{renderer::{RResult, Renderers}, structs::Dimensions};
+use crate::{renderer::{RResult, Renderer}, structs::Dimensions};
 
 use super::events::WindowEvents;
 
@@ -32,40 +32,22 @@ pub enum WindowModes {
 }
 
 #[derive(Debug)]
-#[enum_dispatch(BackendWindow)]
-pub enum BackendWindows<'a> {
+#[enum_dispatch(WindowTrait)]
+pub enum Window<'a> {
     #[cfg(feature = "b-glfw")]
-    GlfwWindow(super::GlfwWindow<'a>),
+    GlfwWindow(super::glfw::GlfwWindow<'a>),
     #[cfg(feature = "b-winit")]
-    WinitWindow(super::WinitWindow<'a>),
+    WinitWindow(super::winit_window::WinitWindow<'a>),
 }
 
-impl BackendWindows<'_> {
-    /*
-    pub fn run(&self, renderer: &Renderers, mut frame_callback: impl FnMut(Vec<WindowEvents>) -> Vec<Objects>) {
-        loop {
-            let events = self.flush_events();
-            
-            if events.contains(&WindowEvents::Redraw) {
-                renderer.recreate(self);
-            }
-
-            let objects = frame_callback(events);
-            if let Err(err) = renderer.render(self, objects) {
-                warn!("Rendering error occured: {err}");
-            };
-            std::thread::sleep(std::time::Duration::from_millis(990));
-        }
-    }
-    */
-
-    pub fn create_renderer(&self) -> RResult<Renderers> {
-        Renderers::create(self)
+impl Window<'_> {
+    pub fn create_renderer(&self) -> RResult<Renderer> {
+        Renderer::create(self)
     }
 }
 
 #[enum_dispatch]
-pub trait BackendWindow {
+pub trait WindowTrait {
     fn handles(&self) -> Result<WindowHandles, HandleError>;
     fn physical_dimensions(&self) -> Dimensions;
     fn dimensions(&self) -> Dimensions;
@@ -74,7 +56,7 @@ pub trait BackendWindow {
     fn current_scale(&self) -> f32;
     fn set_scale(&self, scale: f32);
     fn send_event(&self, event: WindowEvents);
-    fn id(&self) -> WindowIds;
+    fn id(&self) -> WindowId;
     fn close(self);
 }
 
@@ -83,12 +65,12 @@ pub trait BackendWindow {
 #[derive(Debug, PartialEq)]
 pub struct BackendEvent {
     pub event: WindowEvents,
-    pub window_id: WindowIds
+    pub window_id: WindowId
 }
 
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum WindowIds {
+pub enum WindowId {
     #[cfg(feature = "b-winit")]
     Winit(winit::window::WindowId)
 }

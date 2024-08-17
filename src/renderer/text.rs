@@ -2,23 +2,23 @@ use std::sync::Arc;
 
 use enum_dispatch::enum_dispatch;
 
-use super::Renderers;
+use super::Renderer;
 
 
 #[derive(Debug, Clone)]
-#[enum_dispatch(Paragraph)]
-pub enum Paragraphs {
+#[enum_dispatch(ParagraphTrait)]
+pub enum Paragraph {
     #[cfg(feature = "r-skia")]
     Skia(Arc<super::skia::text::SkiaParapgraph>),
     #[cfg(feature = "r-wgpu")]
     Wgpu
 }
 
-impl Paragraphs {
-    pub fn new(renderer: &Renderers, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Self {
+impl Paragraph {
+    pub fn new(renderer: &Renderer, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Self {
         match renderer {
             #[cfg(feature = "r-skia")]
-            Renderers::Skia(r) => Self::Skia(Arc::new(
+            Renderer::Skia(r) => Self::Skia(Arc::new(
                 super::skia::text::SkiaParapgraph::new(r, text, width, max_height, options)
             ))
         }
@@ -26,7 +26,7 @@ impl Paragraphs {
 }
 
 #[enum_dispatch]
-pub trait Paragraph {
+pub trait ParagraphTrait {
     fn options(&self) -> &TextOptions;
     fn height(&self) -> u32;
 }

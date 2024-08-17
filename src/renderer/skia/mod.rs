@@ -1,8 +1,8 @@
 use std::{cell::RefCell, collections::HashMap};
 
-use crate::{backend::windows::{BackendWindow, BackendWindows}, Objects};
+use crate::{backend::windows::{WindowTrait, Window}, Objects};
 
-use super::{errors::RendererError, images::CacheableImage, svgs::CacheableSvg, RResult, Renderer};
+use super::{errors::RendererError, images::CacheableImage, svgs::CacheableSvg, RResult, RendererTrait};
 
 pub mod errors;
 pub mod adapter;
@@ -39,7 +39,7 @@ pub struct SkiaRenderer {
 }
 
 impl SkiaRenderer {
-    pub fn new(window: &BackendWindows) -> RResult<Self> {
+    pub fn new(window: &Window) -> RResult<Self> {
         let mut font_collection = FontCollection::new();
         let font_mgr = FontMgr::new();
         let font_provider = TypefaceFontProvider::new();
@@ -115,8 +115,8 @@ impl SkiaRenderer {
     }
 }
 
-impl Renderer for SkiaRenderer {
-    fn render(&self, window: &BackendWindows, objects: Vec<Objects>) -> RResult<()> {
+impl RendererTrait for SkiaRenderer {
+    fn render(&self, window: &Window, objects: Vec<Objects>) -> RResult<()> {
         self.skia_backend.render(window, |canvas: &Canvas| {
             canvas.draw_color(Color4f::new(0.1, 0.1, 0.1, 1.0), None);
 
@@ -129,7 +129,7 @@ impl Renderer for SkiaRenderer {
         })
     }
 
-    fn recreate(&self, window: &BackendWindows) {
+    fn recreate(&self, window: &Window) {
         self.skia_backend.recreate(window)
     }
 
@@ -206,7 +206,7 @@ pub enum SkiaRenderingBackends {
 }
 
 impl SkiaRenderingBackends {
-    pub fn create(window: &BackendWindows) -> RResult<SkiaRenderingBackends> {
+    pub fn create(window: &Window) -> RResult<SkiaRenderingBackends> {
         let backends = SkiaRenderingBackendTypes::iter();
         for typ in backends {
             match Self::create_type(&typ, window) {
@@ -217,7 +217,7 @@ impl SkiaRenderingBackends {
         Err(RendererError::Skia(SkiaRendererError::NoBackend))
     }
 
-    pub fn create_type(typ: &SkiaRenderingBackendTypes, window: &BackendWindows) -> RResult<SkiaRenderingBackends> {
+    pub fn create_type(typ: &SkiaRenderingBackendTypes, window: &Window) -> RResult<SkiaRenderingBackends> {
         Ok(match typ {
             #[cfg(feature = "skia-vulkan")]
             SkiaRenderingBackendTypes::Vulkan => {
@@ -236,8 +236,8 @@ impl SkiaRenderingBackends {
 
 #[enum_dispatch]
 pub trait SkiaRenderingBackend {
-    fn render(&self, window: &BackendWindows, canvas: impl FnOnce(&Canvas)) -> RResult<()>;
-    fn recreate(&self, window: &BackendWindows);
+    fn render(&self, window: &Window, canvas: impl FnOnce(&Canvas)) -> RResult<()>;
+    fn recreate(&self, window: &Window);
 }
 
 

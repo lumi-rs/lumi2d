@@ -1,8 +1,8 @@
-use lumi2d::{backend::{events::WindowEvents, keys::KeyAction, windows::{BackendWindow, BackendWindows, WindowDetails}, Backend, Backends}, renderer::{Renderer, Renderers}, Objects};
+use lumi2d::{backend::{events::WindowEvents, keys::KeyAction, windows::{WindowTrait, Window, WindowDetails}, BackendTrait, Backend}, renderer::{RendererTrait, Renderer}, Objects};
 
 fn main() {
-    Backends::create(|backend| {
-        let mut windows: Vec<(BackendWindows, Renderers)> = Vec::new();
+    Backend::create(|backend| {
+        let mut windows: Vec<(Window, Renderer)> = Vec::new();
         let main_window = backend.create_window(WindowDetails {
             title: "Main".to_string(),
             ..Default::default()
