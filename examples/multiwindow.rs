@@ -1,4 +1,4 @@
-use lumi2d::{backend::{events::WindowEvents, keys::KeyAction, windows::{WindowTrait, Window, WindowDetails}, BackendTrait, Backend}, renderer::{RendererTrait, Renderer}, Objects};
+use lumi2d::{backend::{events::WindowEvent, keys::KeyAction, windows::{WindowTrait, Window, WindowDetails}, BackendTrait, Backend}, renderer::{RendererTrait, Renderer}, Objects};
 
 fn main() {
     Backend::create(|backend| {
@@ -17,7 +17,7 @@ fn main() {
         backend.subscribe_events(|events| {
             for event in &events {
                 match event.event {
-                    WindowEvents::MouseButton(1, KeyAction::Release) => {
+                    WindowEvent::MouseButton(1, KeyAction::Release) => {
                         println!("Opening window!");
                         let window = backend.create_window(WindowDetails {
                             title: (windows.len()).to_string(),
@@ -28,14 +28,14 @@ fn main() {
         
                         windows.push((window, renderer));
                     },
-                    WindowEvents::CloseRequested => {
+                    WindowEvent::CloseRequested => {
                         let index = windows.iter().position(|(win, _)| win.id() == event.window_id).unwrap();
                         windows.remove(index).0.close();
                         if windows.is_empty() {
                             backend.exit();
                         }
                     },
-                    WindowEvents::WindowSize(_) => {
+                    WindowEvent::WindowSize(_) => {
                         windows.iter()
                         .find(|(win, _)| win.id() == event.window_id)
                         .map(|(win, renderer)| renderer.recreate(win));

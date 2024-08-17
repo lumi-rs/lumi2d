@@ -4,7 +4,7 @@ use log::*;
 use winit::{
     application::ApplicationHandler,
     dpi::{PhysicalPosition, PhysicalSize},
-    event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent},
+    event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent as WinitEvent},
     event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy},
     keyboard::Key,
     window::{Fullscreen, WindowAttributes}
@@ -12,7 +12,7 @@ use winit::{
 
 use crate::backend::{keys::{KeyAction, Modifiers}, windows::WindowModes};
 
-use super::{events::WindowEvents, windows::{BackendEvent, Window, WindowDetails, WindowId}, winit_window::WinitWindow, BResult, Backend, BackendTrait};
+use super::{events::WindowEvent, windows::{BackendEvent, Window, WindowDetails, WindowId}, winit_window::WinitWindow, BResult, Backend, BackendTrait};
 
 
 #[derive(Debug)]
@@ -124,7 +124,7 @@ impl ApplicationHandler<WinitMessage> for WinitApp {
         //self.window = Some(event_loop.create_window(Window::default_attributes()).unwrap());
     }
 
-    fn window_event(&mut self, _event_loop: &ActiveEventLoop, window_id: winit::window::WindowId, event: WindowEvent) {
+    fn window_event(&mut self, _event_loop: &ActiveEventLoop, window_id: winit::window::WindowId, event: WinitEvent) {
         if let Some(event) = convert_event(event) {
             self.event_sender.send(BackendEvent {
                 event,
@@ -182,25 +182,25 @@ enum WinitResponse {
     CreateWindow(winit::window::Window)
 }
 
-fn convert_event(event: WindowEvent) -> Option<WindowEvents> {
+fn convert_event(event: WinitEvent) -> Option<WindowEvent> {
     Some(match event {
-        WindowEvent::RedrawRequested => WindowEvents::Redraw,
-        WindowEvent::CloseRequested => WindowEvents::CloseRequested,
-        WindowEvent::DroppedFile(path) => WindowEvents::FileDropped(path),
-        WindowEvent::Focused(focus) => WindowEvents::FocusChange(focus),
-        WindowEvent::CursorMoved { position, .. } => {
+        WinitEvent::RedrawRequested => WindowEvent::Redraw,
+        WinitEvent::CloseRequested => WindowEvent::CloseRequested,
+        WinitEvent::DroppedFile(path) => WindowEvent::FileDropped(path),
+        WinitEvent::Focused(focus) => WindowEvent::FocusChange(focus),
+        WinitEvent::CursorMoved { position, .. } => {
             let PhysicalPosition { x, y } = position;
-            WindowEvents::CursorPos((x, y).into())
+            WindowEvent::CursorPos((x, y).into())
         },
-        WindowEvent::Resized(size) => {
+        WinitEvent::Resized(size) => {
             let PhysicalSize { width, height } = size;
-            WindowEvents::WindowSize((width, height).into())
+            WindowEvent::WindowSize((width, height).into())
         },
-        WindowEvent::Moved(position) => {
+        WinitEvent::Moved(position) => {
             let PhysicalPosition { x, y } = position;
-            WindowEvents::WindowPos((x, y).into())
+            WindowEvent::WindowPos((x, y).into())
         },
-        WindowEvent::KeyboardInput { device_id: _, event, is_synthetic } => {
+        WinitEvent::KeyboardInput { device_id: _, event, is_synthetic } => {
             if is_synthetic { return None; } // I hope this is correct...
 
             let state = match event.state {
@@ -212,9 +212,9 @@ fn convert_event(event: WindowEvent) -> Option<WindowEvents> {
             } else { None };
 
             // TODO: Modifiers
-            WindowEvents::Key(event.physical_key.into(), text, state, Modifiers::empty())
+            WindowEvent::Key(event.physical_key.into(), text, state, Modifiers::empty())
         },
-        WindowEvent::MouseInput { device_id: _, state, button } => {
+        WinitEvent::MouseInput { device_id: _, state, button } => {
             let button_num = match button {
                 MouseButton::Left => 1,
                 MouseButton::Right => 2,
@@ -228,25 +228,25 @@ fn convert_event(event: WindowEvent) -> Option<WindowEvents> {
                 ElementState::Released => KeyAction::Release,
             };
 
-            WindowEvents::MouseButton(button_num, state)
+            WindowEvent::MouseButton(button_num, state)
         },
-        WindowEvent::MouseWheel { device_id: _, delta, phase: _ } => {
+        WinitEvent::MouseWheel { device_id: _, delta, phase: _ } => {
             let (x, y) = match delta {
                 MouseScrollDelta::LineDelta(x, y) => (x as i32 * 10, y as i32 * 10), // TODO: Adjust
                 MouseScrollDelta::PixelDelta(pos) => (pos.x as _, pos.y as _),
             };
 
-            WindowEvents::MouseScroll(x, y)
+            WindowEvent::MouseScroll(x, y)
         },
-        WindowEvent::Touch(_event) => {
+        WinitEvent::Touch(_event) => {
             // TODO: Handle this properly
             // println!("{event:?}");
             return None;
         },
-        WindowEvent::ScaleFactorChanged { scale_factor, inner_size_writer: _ } => {
-            WindowEvents::ScaleFactor(scale_factor as _)
+        WinitEvent::ScaleFactorChanged { scale_factor, inner_size_writer: _ } => {
+            WindowEvent::ScaleFactor(scale_factor as _)
         },
-        WindowEvent::ModifiersChanged(_modifiers) => {
+        WinitEvent::ModifiersChanged(_modifiers) => {
             // TODO: Handle this
             return None;
         },

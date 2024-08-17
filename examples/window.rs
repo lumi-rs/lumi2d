@@ -1,4 +1,4 @@
-use lumi2d::{backend::{events::WindowEvents, BackendTrait, Backend}, renderer::RendererTrait};
+use lumi2d::{backend::{events::WindowEvent, BackendTrait, Backend}, renderer::RendererTrait};
 
 fn main() {
     Backend::create(|backend| {
@@ -8,11 +8,11 @@ fn main() {
         loop {
             for event in backend.flush_events() {
                 match event.event {
-                    WindowEvents::CloseRequested => {
+                    WindowEvent::CloseRequested => {
                         backend.exit();
                         break;
                     },
-                    WindowEvents::Redraw => {
+                    WindowEvent::Redraw => {
                         renderer.recreate(&window);
                     },
                     _ => {}

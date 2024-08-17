@@ -10,7 +10,7 @@ use super::keys::*;
 /// An enum of all the possible events a window can emit.  
 /// All `Position`s and `Dimension`s already take the window's scale factor into account.
 #[derive(Debug, PartialEq)]
-pub enum WindowEvents {
+pub enum WindowEvent {
     Redraw,
     CloseRequested,
     /// Will not be emitted on Wayland, mobile and web!
@@ -29,4 +29,9 @@ pub enum WindowEvents {
     FileDropped(PathBuf),
     /// f32 = new scale
     ScaleFactor(f32)
+}
+
+
+impl WindowEvent {
+    
 }

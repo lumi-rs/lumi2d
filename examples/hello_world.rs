@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvents, windows::{WindowTrait, WindowDetails}, BackendTrait, Backend}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Objects};
+use lumi2d::{backend::{events::WindowEvent, windows::{WindowTrait, WindowDetails}, BackendTrait, Backend}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Objects};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -44,14 +44,14 @@ fn main() {
 
             for event in events {
                 match event.event {
-                    WindowEvents::CloseRequested => {
+                    WindowEvent::CloseRequested => {
                         backend.exit();
                         break;
                     },
-                    WindowEvents::MouseScroll(_, y) => {
+                    WindowEvent::MouseScroll(_, y) => {
                         window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
                     },
-                    WindowEvents::WindowSize(_) => {
+                    WindowEvent::WindowSize(_) => {
                         renderer.recreate(&window)
                     },
                     _ => {}

@@ -3,7 +3,7 @@ use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowH
 
 use crate::{renderer::{RResult, Renderer}, structs::Dimensions};
 
-use super::events::WindowEvents;
+use super::events::WindowEvent;
 
 
 
@@ -55,7 +55,7 @@ pub trait WindowTrait {
     fn target_scale(&self) -> f32;
     fn current_scale(&self) -> f32;
     fn set_scale(&self, scale: f32);
-    fn send_event(&self, event: WindowEvents);
+    fn send_event(&self, event: WindowEvent);
     fn id(&self) -> WindowId;
     fn close(self);
 }
@@ -64,7 +64,7 @@ pub trait WindowTrait {
 
 #[derive(Debug, PartialEq)]
 pub struct BackendEvent {
-    pub event: WindowEvents,
+    pub event: WindowEvent,
     pub window_id: WindowId
 }
 
