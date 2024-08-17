@@ -50,7 +50,6 @@ fn main() {
                     },
                     WindowEvent::MouseScroll(_, y) => {
                         window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
-                        dbg!(window.dimensions());
                     },
                     WindowEvent::WindowSize(_) => {
                         renderer.recreate(&window)
