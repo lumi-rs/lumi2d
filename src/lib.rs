@@ -5,6 +5,7 @@ pub mod structs;
 use std::sync::OnceLock;
 
 pub use renderer::objects::Objects;
+pub use backend::{Backend, windows::{Window, WindowDetails}};
 
 
 static VSYNC: OnceLock<bool> = OnceLock::new();

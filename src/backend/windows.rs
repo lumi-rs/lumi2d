@@ -69,7 +69,7 @@ pub struct BackendEvent {
 }
 
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum WindowId {
     #[cfg(feature = "b-winit")]
     Winit(winit::window::WindowId)
