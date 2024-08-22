@@ -23,7 +23,7 @@ impl Default for WindowDetails {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum WindowModes {
     Fullscreen,
     Borderless,

@@ -1,4 +1,4 @@
-use std::{cell::{Cell, RefCell}, sync::Arc};
+use std::{cell::{Cell, RefCell}, fmt::Debug, sync::Arc};
 
 use log::*;
 use skia_safe::{gpu::{vk::BackendContext, DirectContext}, Canvas, SurfaceProps, SurfacePropsFlags};
@@ -315,5 +315,14 @@ impl SkiaRenderingBackend for SkiaVulkanBackend {
                 Err(VulkanErr::Other(err).into())
             }
         }
+    }
+}
+
+impl Debug for SkiaVulkanBackend {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SkiaVulkanBackend")
+        .field("direct_context", &self.direct_context)
+        .field("device", &self.device)
+        .finish_non_exhaustive()
     }
 }

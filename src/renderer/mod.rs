@@ -39,6 +39,7 @@ impl Default for RendererType {
     }
 }
 
+#[derive(Debug)]
 #[enum_dispatch(RendererTrait)]
 pub enum Renderer {
     #[cfg(feature = "r-wgpu")]

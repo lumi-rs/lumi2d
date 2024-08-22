@@ -27,6 +27,7 @@ use opengl::SkiaOpenGLSurface;
 use vulkan::SkiaVulkanBackend;
 
 
+#[derive(Debug)]
 pub struct SkiaRenderer {
     skia_backend: SkiaRenderingBackends,
     font_map: RefCell<HashMap<String, Typeface>>,
@@ -193,6 +194,7 @@ pub enum SkiaRenderingBackendTypes {
 }
 
 
+#[derive(Debug)]
 #[enum_dispatch(SkiaRenderingBackend)]
 pub enum SkiaRenderingBackends {
     #[cfg(feature = "skia-vulkan")]

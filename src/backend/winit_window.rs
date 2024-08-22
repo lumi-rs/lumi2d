@@ -165,6 +165,6 @@ impl WindowTrait for WinitWindow<'_> {
     }
 
     fn close(self) {
-        drop(self.window);
+        // self is dropped, closing the window.
     }
 }
