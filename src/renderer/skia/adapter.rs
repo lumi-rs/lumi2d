@@ -6,10 +6,10 @@ use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::Cac
 
 use super::{text::SkiaParapgraph, SkiaRenderer};
 
-pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Objects, scale: f32) {
+pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Objects, scale: f32) {
     match object {
         Objects::Rectangle { rounding, color, rect } => {
-            let paint = paint(color, 1.0);
+            let paint = paint(*color, 1.0);
             
             let skia_rect = skia_rect(rect);
 
@@ -40,9 +40,9 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
         },
         Objects::Text { text, font, size, color, position } => {
             let typeface = renderer.get_font(&font).unwrap();
-            let paint = paint(color, 0.0);
+            let paint = paint(*color, 0.0);
 
-            let mut skia_font = Font::from_typeface(typeface, size as f32);
+            let mut skia_font = Font::from_typeface(typeface, *size);
             skia_font.set_edging(skia_safe::font::Edging::SubpixelAntiAlias);
             skia_font.set_hinting(skia_safe::FontHinting::Slight);
             skia_font.set_subpixel(true);
@@ -56,7 +56,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             );
         },
         Objects::Paragraph { position, paragraph } => {
-            let paragraph: Arc<SkiaParapgraph> = paragraph.try_into().unwrap();
+            let paragraph: Arc<SkiaParapgraph> = paragraph.clone().try_into().unwrap();
 
             paragraph.paragraph.paint(
                 canvas, 
@@ -83,11 +83,11 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: Obje
             );
         },
         Objects::Svg { rect, svg, color } => {
-            let rect = rect * scale;
+            let rect = rect.clone() * scale;
             let mut svg = renderer.get_or_load_svg(&svg, canvas, rect.width, rect.height);
-            let mut paint = paint(color, 0.0);
+            let mut paint = paint(*color, 0.0);
 
-            paint.set_color_filter(color_filters::blend(rgba_to_color4f(color).to_color(), BlendMode::SrcIn));
+            paint.set_color_filter(color_filters::blend(rgba_to_color4f(*color).to_color(), BlendMode::SrcIn));
             paint.set_anti_alias(true);
             
             canvas.save();
@@ -112,7 +112,7 @@ pub(crate) fn paint(color: u32, width: f32) -> Paint {
     paint
 }
 
-pub(crate) fn skia_rect(rect: objects::Rect) -> Rect {
+pub(crate) fn skia_rect(rect: &objects::Rect) -> Rect {
     Rect::from_point_and_size(
         (rect.x as i32, rect.y as i32), 
         (rect.width as i32, rect.height as i32)

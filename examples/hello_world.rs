@@ -38,6 +38,20 @@ fn main() {
         let lorem_ipsum = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
         let paragraph = renderer.create_paragraph(lorem_ipsum.to_string(), 400, Some(120), Default::default());
 
+        let const_objects = Vec::from([
+            // Using a specific font
+            Objects::text(70, 100, "t r a n s p a r e n c y".to_string(), Some("JetBrains Mono".to_string()), 22.0, 0x88AAFFFF),
+            Objects::rectangle(100, 100, 200, 300,  0xFF9999DD, Some(Rounding::new_uniform(16))),
+            Objects::svg(20, 200, 80, 40, svg.clone(), 0xFFAAFFFF),
+            // Using the default/fallback font
+            Objects::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
+            Objects::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
+            Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
+            // For multiline text
+            Objects::paragraph(30, 500, paragraph.clone()),
+            Objects::text(30, 500 + paragraph.height(), paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF)
+        ]);
+
         backend.subscribe_events(|events| {
             let frame_time = format!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
@@ -60,20 +74,11 @@ fn main() {
 
             renderer.render(
                 &window,
-                Vec::from([
-                    // Using a specific font
-                    Objects::text(70, 100, "t r a n s p a r e n c y".to_string(), Some("JetBrains Mono".to_string()), 22.0, 0x88AAFFFF),
-                    Objects::rectangle(100, 100, 200, 300,  0xFF9999DD, Some(Rounding::new_uniform(16))),
-                    Objects::svg(20, 200, 80, 40, svg.clone(), 0xFFAAFFFF),
-                    // Using the default/fallback font
-                    Objects::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
-                    Objects::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
-                    Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
-                    Objects::text(20, 55, frame_time, Some("JetBrains Mono".to_string()), 16.0, 0xFFFFFFFF),
-                    // For multiline text
-                    Objects::paragraph(30, 500, paragraph.clone()),
-                    Objects::text(30, 500 + paragraph.height(), paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF)
+                const_objects.iter()
+                .chain([
+                    &Objects::text(20, 55, frame_time, Some("JetBrains Mono".to_string()), 16.0, 0xFFFFFFFF)
                 ])
+                .collect()
             ).unwrap();
         });
     }).unwrap();

@@ -4,6 +4,7 @@ use crate::{backend::windows::{WindowTrait, Window}, structs::Position};
 
 use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraph};
 
+#[derive(Debug)]
 pub enum Objects {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
     Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<u32>},
@@ -12,6 +13,7 @@ pub enum Objects {
     Svg { svg: CacheableSvg, color: u32, rect: Rect }
 }
 
+#[derive(Debug, Clone)]
 pub struct Rect {
     pub x: u32,
     pub y: u32,
@@ -19,6 +21,7 @@ pub struct Rect {
     pub height: u32
 }
 
+#[derive(Debug, Clone)]
 pub struct Rounding {
     pub top_l: u16,
     pub top_r: u16,
