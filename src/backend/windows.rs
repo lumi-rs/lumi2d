@@ -33,14 +33,14 @@ pub enum WindowModes {
 
 #[derive(Debug)]
 #[enum_dispatch(WindowTrait)]
-pub enum Window<'a> {
+pub enum Window {
     #[cfg(feature = "b-glfw")]
-    GlfwWindow(super::glfw::GlfwWindow<'a>),
+    GlfwWindow(super::glfw::GlfwWindow),
     #[cfg(feature = "b-winit")]
-    WinitWindow(super::winit_window::WinitWindow<'a>),
+    WinitWindow(super::winit_window::WinitWindow),
 }
 
-impl Window<'_> {
+impl Window {
     pub fn create_renderer(&self) -> RResult<Renderer> {
         Renderer::create(self)
     }
@@ -55,7 +55,6 @@ pub trait WindowTrait {
     fn target_scale(&self) -> f32;
     fn current_scale(&self) -> f32;
     fn set_scale(&self, scale: f32);
-    fn send_event(&self, event: WindowEvent);
     fn id(&self) -> WindowId;
     fn close(self);
 }

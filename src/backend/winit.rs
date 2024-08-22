@@ -59,8 +59,7 @@ impl BackendTrait for WinitBackend {
         self.send_message(WinitMessage::CreateWindow(info));
 
         if let Some(WinitResponse::CreateWindow(window)) = self.receive_response() {
-            Window::WinitWindow(WinitWindow { 
-                backend: self,
+            Window::WinitWindow(WinitWindow {
                 scale: Cell::new(window.scale_factor() as f32),
                 window,
             })

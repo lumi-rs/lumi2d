@@ -11,17 +11,16 @@ use winit::{
 
 use crate::structs::Dimensions;
 
-use super::{events::WindowEvent, keys::{KeyAction, Modifiers}, windows::{BackendEvent, WindowTrait, WindowHandles, WindowId, WindowModes}, WinitBackend};
+use super::{events::WindowEvent, keys::{KeyAction, Modifiers}, windows::{WindowTrait, WindowHandles, WindowId, WindowModes}};
 
 
 #[derive(Debug)]
-pub struct WinitWindow<'backend> {
-    pub backend: &'backend WinitBackend,
+pub struct WinitWindow {
     pub window: Window,
     pub scale: Cell<f32>
 }
 
-impl WinitWindow<'_> {
+impl WinitWindow {
     fn _convert_event(&self, event: WinitEvent) -> Option<WindowEvent> {
         Some(match event {
                 WinitEvent::RedrawRequested => WindowEvent::Redraw,
@@ -101,7 +100,7 @@ impl WinitWindow<'_> {
     }
 }
 
-impl WindowTrait for WinitWindow<'_> {
+impl WindowTrait for WinitWindow {
     fn handles(&self) -> Result<WindowHandles, HandleError> {
         WindowHandles::from(&self.window)
     }
@@ -154,10 +153,6 @@ impl WindowTrait for WinitWindow<'_> {
 
     fn set_scale(&self, scale: f32) {
         self.scale.set(scale);
-    }
-
-    fn send_event(&self, event: WindowEvent) {
-        self.backend.event_sender.send(BackendEvent { event, window_id: WindowId::Winit(self.window.id()) }).ok();
     }
 
     fn id(&self) -> WindowId {
