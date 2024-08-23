@@ -20,7 +20,8 @@ pub struct WinitBackend {
     message_proxy: EventLoopProxy<WinitMessage>,
     response_receiver: Receiver<WinitResponse>,
     pub event_receiver: Receiver<BackendEvent>,
-    pub event_sender: Sender<BackendEvent>
+    pub event_sender: Sender<BackendEvent>,
+    exiting: Cell<bool>
 }
 
 impl WinitBackend {
@@ -35,7 +36,10 @@ impl WinitBackend {
 
         let cloned = event_sender.clone();
         std::thread::spawn(move || {
-            callback(Backend::Winit(WinitBackend { message_proxy, response_receiver, event_receiver, event_sender: cloned }));
+            callback(Backend::Winit(WinitBackend {
+                message_proxy, response_receiver, event_receiver, event_sender: cloned,
+                exiting: Cell::new(false)
+            }));
         });
 
         let mut app = WinitApp { response_sender, event_sender };
@@ -73,12 +77,13 @@ impl BackendTrait for WinitBackend {
     }
 
     fn exit(&self) {
+        self.exiting.set(true);
         self.send_message(WinitMessage::Exit);
     }
 
     fn subscribe_events(&self, mut callback: impl FnMut(Vec<BackendEvent>)) {
         if crate::polling() {
-            loop {
+            while !self.exiting.get() {
                 callback(self.flush_events());
             }
         } else {
@@ -90,7 +95,8 @@ impl BackendTrait for WinitBackend {
                     events.push(queued_event);
                 }
     
-                callback(events)
+                callback(events);
+                if self.exiting.get() { break; }
             }
         }
     }
