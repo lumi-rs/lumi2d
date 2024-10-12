@@ -5,9 +5,9 @@ use crate::{backend::windows::{WindowTrait, Window}, structs::Position};
 use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraph};
 
 #[derive(Debug)]
-pub enum Objects {
+pub enum Object {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
-    Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<u32>},
+    Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<i32>},
     Paragraph { paragraph: Paragraph, position: Position<u32> },
     Image { image: CacheableImage, rect: Rect },
     Svg { svg: CacheableSvg, color: u32, rect: Rect }
@@ -15,8 +15,8 @@ pub enum Objects {
 
 #[derive(Debug, Clone)]
 pub struct Rect {
-    pub x: u32,
-    pub y: u32,
+    pub x: i32,
+    pub y: i32,
     pub width: u32,
     pub height: u32
 }
@@ -52,40 +52,40 @@ impl Rounding {
 }
 
 #[allow(clippy::too_many_arguments)]
-impl Objects {
+impl Object {
     #[inline]
-    pub fn rect(x: u32, y: u32, width: u32, height: u32) -> Rect {
+    pub fn rect(x: i32, y: i32, width: u32, height: u32) -> Rect {
         Rect { x, y, width, height }
     }
 
     /// Shorthand function for creating an `Objects::Rectangle` with the given properties.
     #[inline]
-    pub fn rectangle(x: u32, y: u32, width: u32, height: u32, color: u32, rounding: Option<Rounding>) -> Objects {
-        Objects::Rectangle { color, rounding, rect: Self::rect(x, y, width, height) }
+    pub fn rectangle(x: i32, y: i32, width: u32, height: u32, color: u32, rounding: Option<Rounding>) -> Object {
+        Object::Rectangle { color, rounding, rect: Self::rect(x, y, width, height) }
     }
 
     /// Shorthand function for creating an `Objects::Text` with the given properties.
     #[inline]
-    pub fn text(x: u32, y: u32, text: String, font: Option<String>, size: f32, color: u32) -> Objects {
-        Objects::Text { text, font, color, size, position: Position::new(x, y) }
+    pub fn text(x: i32, y: i32, text: String, font: Option<String>, size: f32, color: u32) -> Object {
+        Object::Text { text, font, color, size, position: Position::new(x, y) }
     }
 
     /// Shorthand function for creating an `Objects::Paragraph` with the given properties.
     #[inline]
-    pub fn paragraph(x: u32, y: u32, paragraph: Paragraph) -> Objects {
-        Objects::Paragraph { position: Position::new(x, y), paragraph }
+    pub fn paragraph(x: u32, y: u32, paragraph: Paragraph) -> Object {
+        Object::Paragraph { position: Position::new(x, y), paragraph }
     }
 
     /// Shorthand function for creating an `Objects::Image` with the given properties.
     #[inline]
-    pub fn image(x: u32, y: u32, width: u32, height: u32, image: CacheableImage) -> Objects {
-        Objects::Image { image, rect: Self::rect(x, y, width, height) }
+    pub fn image(x: i32, y: i32, width: u32, height: u32, image: CacheableImage) -> Object {
+        Object::Image { image, rect: Self::rect(x, y, width, height) }
     }
     
     /// Shorthand function for creating an `Objects::Svg` with the given properties.  
     #[inline]
-    pub fn svg(x: u32, y: u32, width: u32, height: u32, svg: CacheableSvg, color: u32) -> Objects {
-        Objects::Svg { svg, color, rect: Self::rect(x, y, width, height) }
+    pub fn svg(x: i32, y: i32, width: u32, height: u32, svg: CacheableSvg, color: u32) -> Object {
+        Object::Svg { svg, color, rect: Self::rect(x, y, width, height) }
     }
 
     #[inline]
@@ -94,26 +94,26 @@ impl Objects {
     }
 }
 
-impl Mul<f32> for Objects {
+impl Mul<f32> for Object {
     type Output = Self;
 
     fn mul(self, with: f32) -> Self::Output {
         if with == 1.0 { return self; }
 
         match self {
-            Objects::Rectangle { rounding, color, rect } => Objects::Rectangle {
+            Object::Rectangle { rounding, color, rect } => Object::Rectangle {
                 rounding, color, rect: rect * with
             },
-            Objects::Text { text, font, size, color, position } => Objects::Text {
+            Object::Text { text, font, size, color, position } => Object::Text {
                 text, font, size: size * with, color, position: position * with
             },
-            Objects::Paragraph { position, paragraph } => Objects::Paragraph {
+            Object::Paragraph { position, paragraph } => Object::Paragraph {
                 position: position * with, paragraph
             },
-            Objects::Image { rect, image } => Objects::Image {
+            Object::Image { rect, image } => Object::Image {
                 rect: rect * with, image
             },
-            Objects::Svg { rect, svg, color } => Objects::Svg {
+            Object::Svg { rect, svg, color } => Object::Svg {
                 rect: rect * with, svg, color
             }
         }
@@ -127,8 +127,10 @@ impl Mul<f32> for Rect {
     fn mul(self, with: f32) -> Self::Output {
         let Self { x, y, width, height } = self;
 
-        let [x, y, width, height] = [x, y, width, height]
-        .map(|num| (num as f32 * with).round() as u32);
+        let x = (x as f32 * with).round() as i32;
+        let y = (y as f32 * with).round() as i32;
+        let width = (width as f32 * with).round() as u32;
+        let height = (height as f32 * with).round() as u32;
 
         Self { x, y, width, height }
     }

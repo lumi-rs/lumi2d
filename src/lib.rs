@@ -4,7 +4,7 @@ pub mod structs;
 
 use std::sync::OnceLock;
 
-pub use renderer::objects::Objects;
+pub use renderer::objects::Object;
 pub use backend::{Backend, windows::{Window, WindowDetails}};
 
 

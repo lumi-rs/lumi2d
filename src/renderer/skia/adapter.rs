@@ -2,13 +2,13 @@ use std::sync::Arc;
 
 use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
-use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Objects};
+use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Object};
 
 use super::{text::SkiaParapgraph, SkiaRenderer};
 
-pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Objects, scale: f32) {
+pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Object, scale: f32) {
     match object {
-        Objects::Rectangle { rounding, color, rect } => {
+        Object::Rectangle { rounding, color, rect } => {
             let paint = paint(*color, 1.0);
             
             let skia_rect = skia_rect(rect);
@@ -38,7 +38,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
                 );
             }
         },
-        Objects::Text { text, font, size, color, position } => {
+        Object::Text { text, font, size, color, position } => {
             let typeface = renderer.get_font(&font).unwrap();
             let paint = paint(*color, 0.0);
 
@@ -55,7 +55,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
                 &paint
             );
         },
-        Objects::Paragraph { position, paragraph } => {
+        Object::Paragraph { position, paragraph } => {
             let paragraph: Arc<SkiaParapgraph> = paragraph.clone().try_into().unwrap();
 
             paragraph.paragraph.paint(
@@ -63,7 +63,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
                 (position.x as f32, position.y as f32)
             );
         },
-        Objects::Image { rect, image } => {
+        Object::Image { rect, image } => {
             let skia_image = renderer.get_or_load_image(&image);
 
             let lattice = Lattice {
@@ -82,7 +82,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
                 None
             );
         },
-        Objects::Svg { rect, svg, color } => {
+        Object::Svg { rect, svg, color } => {
             let rect = rect.clone() * scale;
             let mut svg = renderer.get_or_load_svg(&svg, canvas, rect.width, rect.height);
             let mut paint = paint(*color, 0.0);

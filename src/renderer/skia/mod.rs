@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::HashMap};
 
-use crate::{backend::windows::{WindowTrait, Window}, Objects};
+use crate::{backend::windows::{WindowTrait, Window}, Object};
 
 use super::{errors::RendererError, images::CacheableImage, svgs::CacheableSvg, RResult, RendererTrait};
 
@@ -117,7 +117,7 @@ impl SkiaRenderer {
 }
 
 impl RendererTrait for SkiaRenderer {
-    fn render(&self, window: &Window, objects: Vec<&Objects>) -> RResult<()> {
+    fn render(&self, window: &Window, objects: Vec<&Object>) -> RResult<()> {
         self.skia_backend.render(window, |canvas: &Canvas| {
             canvas.draw_color(Color4f::new(0.1, 0.1, 0.1, 1.0), None);
 

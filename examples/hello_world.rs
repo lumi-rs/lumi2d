@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvent, windows::{WindowTrait, WindowDetails}, BackendTrait, Backend}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Objects};
+use lumi2d::{backend::{events::WindowEvent, windows::{WindowTrait, WindowDetails}, BackendTrait, Backend}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Object};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -40,16 +40,16 @@ fn main() {
 
         let const_objects = Vec::from([
             // Using a specific font
-            Objects::text(70, 100, "t r a n s p a r e n c y".to_string(), Some("JetBrains Mono".to_string()), 22.0, 0x88AAFFFF),
-            Objects::rectangle(100, 100, 200, 300,  0xFF9999DD, Some(Rounding::new_uniform(16))),
-            Objects::svg(20, 200, 80, 40, svg.clone(), 0xFFAAFFFF),
+            Object::text(70, 100, "t r a n s p a r e n c y".to_string(), Some("JetBrains Mono".to_string()), 22.0, 0x88AAFFFF),
+            Object::rectangle(100, 100, 200, 300,  0xFF9999DD, Some(Rounding::new_uniform(16))),
+            Object::svg(20, 200, 80, 40, svg.clone(), 0xFFAAFFFF),
             // Using the default/fallback font
-            Objects::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
-            Objects::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
-            Objects::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
+            Object::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
+            Object::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
+            Object::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
+            Object::text(30, 500 + paragraph.height() as i32, paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF),
             // For multiline text
-            Objects::paragraph(30, 500, paragraph.clone()),
-            Objects::text(30, 500 + paragraph.height(), paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF)
+            Object::paragraph(30, 500, paragraph.clone())
         ]);
 
         backend.subscribe_events(|events| {
@@ -76,7 +76,7 @@ fn main() {
                 &window,
                 const_objects.iter()
                 .chain([
-                    &Objects::text(20, 55, frame_time, Some("JetBrains Mono".to_string()), 16.0, 0xFFFFFFFF)
+                    &Object::text(20, 55, frame_time, Some("JetBrains Mono".to_string()), 16.0, 0xFFFFFFFF)
                 ])
                 .collect()
             ).unwrap();

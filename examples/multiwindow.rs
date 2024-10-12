@@ -1,4 +1,4 @@
-use lumi2d::{backend::{events::WindowEvent, keys::KeyAction, windows::{WindowTrait, Window, WindowDetails}, BackendTrait, Backend}, renderer::{RendererTrait, Renderer}, Objects};
+use lumi2d::{backend::{events::WindowEvent, keys::KeyAction, windows::{WindowTrait, Window, WindowDetails}, BackendTrait, Backend}, renderer::{RendererTrait, Renderer}, Object};
 
 fn main() {
     Backend::create(|backend| {
@@ -47,7 +47,7 @@ fn main() {
             for (index, (window, renderer)) in windows.iter().enumerate() {
                 renderer.render(
                     window, 
-                    vec![&Objects::text(10, 10, index.to_string(), None, 50.0, 0xFFFFFFFF)]
+                    vec![&Object::text(10, 10, index.to_string(), None, 50.0, 0xFFFFFFFF)]
                 ).unwrap();
             }
         });

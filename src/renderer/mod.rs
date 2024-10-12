@@ -18,7 +18,7 @@ pub mod wgpu;
 pub mod skia;
 
 
-use crate::{backend::windows::Window, Objects};
+use crate::{backend::windows::Window, Object};
 
 use self::errors::RendererError;
 
@@ -76,7 +76,7 @@ impl Renderer {
 
 #[enum_dispatch]
 pub trait RendererTrait {
-    fn render(&self, window: &Window, objects: Vec<&Objects>) -> RResult<()>;
+    fn render(&self, window: &Window, objects: Vec<&Object>) -> RResult<()>;
     fn recreate(&self, window: &Window);
     /// Register a font to be used with the given alias
     fn register_font(&self, bytes: &[u8], alias: &str);
