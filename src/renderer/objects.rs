@@ -8,7 +8,7 @@ use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraph};
 pub enum Object {
     Rectangle { rounding: Option<Rounding>, color: u32, rect: Rect },
     Text { text: String, font: Option<String>, size: f32, color: u32, position: Position<i32>},
-    Paragraph { paragraph: Paragraph, position: Position<u32> },
+    Paragraph { paragraph: Paragraph, position: Position<i32> },
     Image { image: CacheableImage, rect: Rect },
     Svg { svg: CacheableSvg, color: u32, rect: Rect }
 }
@@ -72,7 +72,7 @@ impl Object {
 
     /// Shorthand function for creating an `Objects::Paragraph` with the given properties.
     #[inline]
-    pub fn paragraph(x: u32, y: u32, paragraph: Paragraph) -> Object {
+    pub fn paragraph(x: i32, y: i32, paragraph: Paragraph) -> Object {
         Object::Paragraph { position: Position::new(x, y), paragraph }
     }
 

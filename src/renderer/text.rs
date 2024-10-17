@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{num::NonZeroU32, sync::Arc};
 
 use enum_dispatch::enum_dispatch;
 
@@ -15,7 +15,7 @@ pub enum Paragraph {
 }
 
 impl Paragraph {
-    pub fn new(renderer: &Renderer, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Self {
+    pub fn new(renderer: &Renderer, text: String, width: u32, max_height: Option<NonZeroU32>, options: TextOptions) -> Self {
         match renderer {
             #[cfg(feature = "r-skia")]
             Renderer::Skia(r) => Self::Skia(Arc::new(

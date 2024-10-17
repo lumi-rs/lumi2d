@@ -1,3 +1,5 @@
+use std::num::NonZeroU32;
+
 use enum_dispatch::enum_dispatch;
 use images::CacheableImage;
 use log::warn;
@@ -70,7 +72,9 @@ impl Renderer {
     }
 
     pub fn create_paragraph(&self, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Paragraph {
-        Paragraph::new(self, text, width, max_height, options)
+        let max_h = max_height.and_then(NonZeroU32::new);
+        
+        Paragraph::new(self, text, width, max_h, options)
     }
 }
 

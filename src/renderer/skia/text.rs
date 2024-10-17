@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{num::NonZeroU32, sync::Arc};
 
 use skia_safe::{font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, Font, FontStyle};
 
@@ -14,7 +14,7 @@ pub struct SkiaParapgraph {
 }
 
 impl SkiaParapgraph {
-    pub fn new(renderer: &SkiaRenderer, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Self {
+    pub fn new(renderer: &SkiaRenderer, text: String, width: u32, max_height: Option<NonZeroU32>, options: TextOptions) -> Self {
         let mut paragraph_style = ParagraphStyle::new();
         let mut text_style = TextStyle::new();
         let paint = paint(options.color, 0.0);
@@ -46,7 +46,7 @@ impl SkiaParapgraph {
             } else {
                 let font = Font::from_typeface(typeface.expect("No font found"), options.size);
                 let (line_height, _) = font.metrics();
-                paragraph_style.set_max_lines((max_h as f32 / line_height).floor() as usize);
+                paragraph_style.set_max_lines((max_h.get() as f32 / line_height).floor() as usize);
             }
         }
         

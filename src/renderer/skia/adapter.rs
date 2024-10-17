@@ -114,7 +114,7 @@ pub(crate) fn paint(color: u32, width: f32) -> Paint {
 
 pub(crate) fn skia_rect(rect: &objects::Rect) -> Rect {
     Rect::from_point_and_size(
-        (rect.x as i32, rect.y as i32), 
+        (rect.x, rect.y), 
         (rect.width as i32, rect.height as i32)
     )
 }
@@ -149,8 +149,8 @@ pub(crate) fn image_to_skia(image: &CacheableImage) -> skia_safe::Image {
     );
 
     skia_safe::images::raster_from_data(
-        &image_info, 
-        data, 
+        &image_info,
+        data,
         dimensions.width as usize * 4
     ).unwrap()
 }
