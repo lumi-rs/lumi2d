@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
-use crate::{renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Object};
+use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Object};
 
 use super::{text::SkiaParapgraph, SkiaRenderer};
 
-pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Object, scale: f32) {
+pub(crate) fn draw_object(_renderer: &SkiaRenderer, data: &SkiaRendererData, canvas: &Canvas, object: &Object, scale: f32) {
     match object {
         Object::Rectangle { rounding, color, rect } => {
             let paint = paint(*color, 1.0);
@@ -39,7 +39,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
             }
         },
         Object::Text { text, font, size, color, position } => {
-            let typeface = renderer.get_font(&font).unwrap();
+            let typeface = data.get_font(&font).unwrap();
             let paint = paint(*color, 0.0);
 
             let mut skia_font = Font::from_typeface(typeface, *size);
@@ -64,7 +64,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
             );
         },
         Object::Image { rect, image } => {
-            let skia_image = renderer.get_or_load_image(&image);
+            let skia_image = data.get_or_load_image(&image);
 
             let lattice = Lattice {
                 x_divs: &[],
@@ -84,7 +84,7 @@ pub(crate) fn draw_object(renderer: &SkiaRenderer, canvas: &Canvas, object: &Obj
         },
         Object::Svg { rect, svg, color } => {
             let rect = rect.clone() * scale;
-            let mut svg = renderer.get_or_load_svg(&svg, canvas, rect.width, rect.height);
+            let mut svg = data.get_or_load_svg(&svg, canvas, rect.width, rect.height);
             let mut paint = paint(*color, 0.0);
 
             paint.set_color_filter(color_filters::blend(rgba_to_color4f(*color).to_color(), BlendMode::SrcIn));

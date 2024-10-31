@@ -2,9 +2,9 @@ use std::{num::NonZeroU32, sync::Arc};
 
 use skia_safe::{font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, Font, FontStyle};
 
-use crate::renderer::text::{ParagraphTrait, TextOptions, TextOverflow, TextWrap};
+use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::text::{ParagraphTrait, TextOptions, TextOverflow, TextWrap}};
 
-use super::{adapter::paint, SkiaRenderer};
+use super::adapter::paint;
 
 
 #[derive(Debug)]
@@ -14,11 +14,11 @@ pub struct SkiaParapgraph {
 }
 
 impl SkiaParapgraph {
-    pub fn new(renderer: &SkiaRenderer, text: String, width: u32, max_height: Option<NonZeroU32>, options: TextOptions) -> Self {
+    pub fn new(data: &SkiaRendererData, text: String, width: u32, max_height: Option<NonZeroU32>, options: TextOptions) -> Self {
         let mut paragraph_style = ParagraphStyle::new();
         let mut text_style = TextStyle::new();
         let paint = paint(options.color, 0.0);
-        let typeface = renderer.get_font(&options.font);
+        let typeface = data.get_font(&options.font);
 
         text_style
         .set_foreground_paint(&paint)
@@ -52,7 +52,7 @@ impl SkiaParapgraph {
         
         paragraph_style.set_text_style(&text_style);
 
-        let mut paragraph_builder = ParagraphBuilder::new(&paragraph_style, renderer.font_collection.clone());
+        let mut paragraph_builder = ParagraphBuilder::new(&paragraph_style, data.font_collection.clone());
         paragraph_builder.push_style(&text_style);
         paragraph_builder.add_text(text);
 

@@ -1,11 +1,6 @@
-use std::num::NonZeroU32;
-
 use enum_dispatch::enum_dispatch;
-use images::CacheableImage;
 use log::warn;
 use strum::{EnumIter, IntoEnumIterator};
-use svgs::CacheableSvg;
-use text::{Paragraph, TextOptions};
 
 
 pub mod errors;
@@ -20,7 +15,7 @@ pub mod wgpu;
 pub mod skia;
 
 
-use crate::{backend::windows::Window, Object};
+use crate::{backend::{renderer_data::RendererData, windowing::window::Window}, Backend, Object};
 
 use self::errors::RendererError;
 
@@ -51,11 +46,14 @@ pub enum Renderer {
 }
 
 impl Renderer {
-    pub fn create(window: &Window) -> RResult<Renderer> {
-        let backends = RendererType::iter();
-        for typ in backends {
+    pub fn create(backend: &Backend, window: &Window) -> RResult<Renderer> {
+        let renderers = RendererType::iter();
+        for typ in renderers {
             match Self::create_type(&typ, window) {
-                Ok(backend) => return Ok(backend),
+                Ok(renderer) => {
+                    backend.transform_renderer_data(&renderer);
+                    return Ok(renderer)
+                },
                 Err(err) => warn!("Error initalizing Skia {typ:?} backend: {err}; attempting next backend..."),
             }
         }
@@ -70,29 +68,10 @@ impl Renderer {
             },
         })
     }
-
-    pub fn create_paragraph(&self, text: String, width: u32, max_height: Option<u32>, options: TextOptions) -> Paragraph {
-        let max_h = max_height.and_then(NonZeroU32::new);
-        
-        Paragraph::new(self, text, width, max_h, options)
-    }
 }
 
 #[enum_dispatch]
 pub trait RendererTrait {
-    fn render(&self, window: &Window, objects: Vec<&Object>) -> RResult<()>;
+    fn render(&self, window: &Window, data: &RendererData, objects: Vec<&Object>) -> RResult<()>;
     fn recreate(&self, window: &Window);
-    /// Register a font to be used with the given alias
-    fn register_font(&self, bytes: &[u8], alias: &str);
-    /// Register a font to be used with the given alias, and set it as the deafult font.  
-    /// If this is not called, the default font will be the first one registered.
-    fn register_default_font(&self, bytes: &[u8], alias: &str);
-    /// Preload an image into the Renderer's image cache. Not required to be called manually.
-    fn load_image(&self, image: &CacheableImage);
-    /// Remove an image from the Renderer's cache. Needs to be called manually if the image should not be loaded permanently (for now).
-    fn unload_image(&self, image: &CacheableImage);
-    /// Preload an SVG into the Renderer's SVG cache. Not required to be called manually.
-    fn load_svg(&self, svg: &CacheableSvg);
-    /// Remove an SVG from the Renderer's cache. Needs to be called manually if the SVG should not be loaded permanently (for now).
-    fn unload_svg(&self, svg: &CacheableSvg);
 }

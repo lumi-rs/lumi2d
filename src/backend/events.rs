@@ -17,7 +17,7 @@ pub enum WindowEvent {
     WindowPos(Position<i32>),
     WindowSize(Dimensions),
     CursorPos(Position<f64>),
-    // Button number, KeyAction
+    /// Button number, KeyAction
     MouseButton(u32, KeyAction),
     /// x offset, y offset  
     /// +x is content moving right (scroll left), +y is content moving down (scroll up)

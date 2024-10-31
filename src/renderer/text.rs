@@ -2,7 +2,7 @@ use std::{num::NonZeroU32, sync::Arc};
 
 use enum_dispatch::enum_dispatch;
 
-use super::Renderer;
+use crate::backend::renderer_data::RendererData;
 
 
 #[derive(Debug, Clone)]
@@ -15,12 +15,13 @@ pub enum Paragraph {
 }
 
 impl Paragraph {
-    pub fn new(renderer: &Renderer, text: String, width: u32, max_height: Option<NonZeroU32>, options: TextOptions) -> Self {
-        match renderer {
+    pub fn new(renderer_data: &RendererData, text: String, width: u32, max_height: Option<NonZeroU32>, options: TextOptions) -> Self {
+        match renderer_data {
             #[cfg(feature = "r-skia")]
-            Renderer::Skia(r) => Self::Skia(Arc::new(
-                super::skia::text::SkiaParapgraph::new(r, text, width, max_height, options)
-            ))
+            RendererData::Skia(data) => Self::Skia(Arc::new(
+                super::skia::text::SkiaParapgraph::new(data, text, width, max_height, options)
+            )),
+            _ => panic!()
         }
     }
 }

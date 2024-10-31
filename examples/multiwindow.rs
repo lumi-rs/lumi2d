@@ -1,4 +1,4 @@
-use lumi2d::{backend::{events::WindowEvent, keys::KeyAction, windows::{WindowTrait, Window, WindowDetails}, BackendTrait, Backend}, renderer::{RendererTrait, Renderer}, Object};
+use lumi2d::{backend::{events::WindowEvent, keys::KeyAction, renderer_data::RendererDataTrait, windowing::window::{Window, WindowDetails, WindowTrait}, BackendTrait}, renderer::{Renderer, RendererTrait}, Backend, Object};
 
 fn main() {
     Backend::create(|backend| {
@@ -7,10 +7,10 @@ fn main() {
             title: "Main".to_string(),
             ..Default::default()
         });
-        let renderer = main_window.create_renderer().unwrap();
+        let renderer = main_window.create_renderer(&backend).unwrap();
         
         let font_bytes = include_bytes!("/home/der/Programering2/yetalauncher/resources/fonts/Nunito-Medium.ttf");
-        renderer.register_font(font_bytes, "Nunito");
+        backend.renderer_data().register_font(font_bytes, "Nunito");
 
         windows.push((main_window, renderer));
 
@@ -23,8 +23,8 @@ fn main() {
                             title: (windows.len()).to_string(),
                             ..Default::default()
                         });
-                        let renderer = window.create_renderer().unwrap();
-                        renderer.register_font(font_bytes, "");
+                        let renderer = window.create_renderer(&backend).unwrap();
+                        backend.data().register_font(font_bytes, "");
         
                         windows.push((window, renderer));
                     },
@@ -46,7 +46,8 @@ fn main() {
 
             for (index, (window, renderer)) in windows.iter().enumerate() {
                 renderer.render(
-                    window, 
+                    window,
+                    &backend.data(),
                     vec![&Object::text(10, 10, index.to_string(), None, 50.0, 0xFFFFFFFF)]
                 ).unwrap();
             }

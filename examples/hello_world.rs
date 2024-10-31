@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvent, windows::{WindowTrait, WindowDetails}, BackendTrait, Backend}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Object};
+use lumi2d::{backend::{events::WindowEvent, renderer_data::RendererDataTrait, windowing::window::{WindowDetails, WindowTrait}}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Backend, BackendTrait, Object};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -17,15 +17,16 @@ fn main() {
             ..Default::default()
         });
 
-        let renderer = window.create_renderer().unwrap();
+        let renderer = window.create_renderer(&backend).unwrap();
+        renderer.render(&window, &backend.data(), Vec::new()).unwrap();
 
         let inter_font = include_bytes!("Inter-Tight.ttf");
         // Since this is the first registered font, it will be set as the default/fallback font.
         // If you want to register another font as the default, call renderer.register_default_font instead.
-        renderer.register_font(inter_font, "Inter");
+        backend.data().register_font(inter_font, "Inter");
 
         let jetbrains_font = include_bytes!("JetBrains_Mono.ttf");
-        renderer.register_font(jetbrains_font, "JetBrains Mono");
+        backend.data().register_font(jetbrains_font, "JetBrains Mono");
 
         let mut last_frame = Instant::now();
 
@@ -36,7 +37,7 @@ fn main() {
         let svg = CacheableSvg::new_cloned(svg_bytes);
 
         let lorem_ipsum = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
-        let paragraph = renderer.create_paragraph(lorem_ipsum.to_string(), 400, Some(120), Default::default());
+        let paragraph = backend.data().create_paragraph(lorem_ipsum.to_string(), 400, Some(120), Default::default());
 
         let const_objects = Vec::from([
             // Using a specific font
@@ -74,6 +75,7 @@ fn main() {
 
             renderer.render(
                 &window,
+                &backend.data(),
                 const_objects.iter()
                 .chain([
                     &Object::text(20, 55, frame_time, Some("JetBrains Mono".to_string()), 16.0, 0xFFFFFFFF)

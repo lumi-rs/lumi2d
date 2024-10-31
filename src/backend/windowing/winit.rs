@@ -10,9 +10,9 @@ use winit::{
     window::{Fullscreen, WindowAttributes}
 };
 
-use crate::backend::{keys::{KeyAction, Modifiers}, windows::WindowModes};
+use crate::backend::{events::WindowEvent, keys::{KeyAction, Modifiers}, windowing::window::{BackendEvent, Window, WindowDetails, WindowId, WindowModes}, BResult, BackendTrait};
 
-use super::{events::WindowEvent, windows::{BackendEvent, Window, WindowDetails, WindowId}, winit_window::WinitWindow, BResult, Backend, BackendTrait};
+use super::{winit_window::WinitWindow, WindowBackend};
 
 
 #[derive(Debug)]
@@ -25,7 +25,7 @@ pub struct WinitBackend {
 }
 
 impl WinitBackend {
-    pub fn create(callback: impl FnOnce(Backend) + Send + 'static) -> BResult<()> {
+    pub fn create(callback: impl FnOnce(WindowBackend) + Send + 'static) -> BResult<()> {
         let (response_sender, response_receiver) = mpsc::channel();
         let (event_sender, event_receiver) = mpsc::channel();
         
@@ -36,7 +36,7 @@ impl WinitBackend {
 
         let cloned = event_sender.clone();
         std::thread::spawn(move || {
-            callback(Backend::Winit(WinitBackend {
+            callback(WindowBackend::Winit(WinitBackend {
                 message_proxy, response_receiver, event_receiver, event_sender: cloned,
                 exiting: Cell::new(false)
             }));

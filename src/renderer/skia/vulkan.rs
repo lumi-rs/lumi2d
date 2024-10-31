@@ -10,7 +10,7 @@ use vulkano::{
     format::Format,
     Handle, Validated, VulkanError, VulkanLibrary, VulkanObject
 };
-use crate::{backend::windows::{WindowTrait, Window}, renderer::{errors::RendererError, skia::errors::VulkanErr, RResult}};
+use crate::{backend::windowing::window::{WindowTrait, Window}, renderer::{errors::RendererError, skia::errors::VulkanErr, RResult}};
 
 use super::SkiaRenderingBackend;
 

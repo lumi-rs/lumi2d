@@ -1,9 +1,9 @@
 use enum_dispatch::enum_dispatch;
 use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle};
 
-use crate::{renderer::{RResult, Renderer}, structs::Dimensions};
+use crate::{renderer::{RResult, Renderer}, structs::Dimensions, Backend};
 
-use super::events::WindowEvent;
+use crate::backend::events::WindowEvent;
 
 
 
@@ -41,8 +41,8 @@ pub enum Window {
 }
 
 impl Window {
-    pub fn create_renderer(&self) -> RResult<Renderer> {
-        Renderer::create(self)
+    pub fn create_renderer(&self, backend: &Backend) -> RResult<Renderer> {
+        Renderer::create(backend, self)
     }
 }
 

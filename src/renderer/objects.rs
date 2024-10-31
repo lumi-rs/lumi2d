@@ -1,6 +1,6 @@
 use std::ops::Mul;
 
-use crate::{backend::windows::{WindowTrait, Window}, structs::Position};
+use crate::{backend::windowing::window::{WindowTrait, Window}, structs::Position};
 
 use super::{images::CacheableImage, svgs::CacheableSvg, text::Paragraph};
 

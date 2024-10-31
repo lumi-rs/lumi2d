@@ -11,7 +11,7 @@ use winit::{
 
 use crate::structs::Dimensions;
 
-use super::{events::WindowEvent, keys::{KeyAction, Modifiers}, windows::{WindowTrait, WindowHandles, WindowId, WindowModes}};
+use crate::backend::{events::WindowEvent, keys::{KeyAction, Modifiers}, windowing::window::{WindowTrait, WindowHandles, WindowId, WindowModes}};
 
 
 #[derive(Debug)]

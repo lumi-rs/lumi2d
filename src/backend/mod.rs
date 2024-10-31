@@ -1,27 +1,24 @@
-use std::ffi::c_void;
+use std::{ffi::c_void, sync::{RwLock, RwLockReadGuard}};
 
 use enum_dispatch::enum_dispatch;
-use log::*;
+use renderer_data::{RendererData, RendererDataTrait};
 use strum::{EnumIter, IntoEnumIterator};
-use windows::BackendEvent;
+use windowing::{window::BackendEvent, WindowBackend};
 
-use self::{errors::{BackendError, BackendInitError}, windows::{Window, WindowDetails}};
+use crate::renderer::Renderer;
+
+use self::{errors::BackendError, windowing::window::{Window, WindowDetails}};
+
 #[cfg(feature = "b-glfw")]
-use self::glfw::*;
+use windowing::glfw::*;
 #[cfg(feature = "b-winit")]
-use self::winit::*;
+use windowing::winit::*;
 
-
-pub mod windows;
+pub mod renderer_data;
+pub mod windowing;
 pub mod events;
 pub mod keys;
 pub mod errors;
-#[cfg(feature = "b-winit")]
-pub mod winit;
-#[cfg(feature = "b-winit")]
-pub mod winit_window;
-#[cfg(feature = "b-glfw")]
-pub mod glfw;
 
 
 pub type BResult<T> = Result<T, BackendError>;
@@ -41,41 +38,11 @@ impl Default for BackendType {
     }
 }
 
-
 #[derive(Debug)]
-#[enum_dispatch(BackendTrait)]
-pub enum Backend {
-    #[cfg(feature = "b-winit")]
-    Winit(WinitBackend),
-    #[cfg(feature = "b-glfw")]
-    Glfw(GlfwBackend)
-}
-
-impl Backend {
-    pub fn create(callback: impl FnOnce(Backend) + Copy + Send + 'static) -> BResult<()> {
-        let backends = BackendType::iter();
-        for typ in backends {
-            match Self::create_type(&typ, callback) {
-                Ok(()) => return Ok(()),
-                Err(err) => warn!("Error initalizing {typ:?} backend: {err}; attempting next backend..."),
-            }
-        }
-        Err(BackendError::Init(BackendInitError::NoBackend))
-    }
-
-    pub fn create_type(backend: &BackendType, callback: impl FnOnce(Backend) + Send + 'static) -> BResult<()> {
-        match backend {
-            #[cfg(feature = "b-glfw")]
-            BackendType::Glfw => {
-                GlfwBackend::create(callback)?;
-            },
-            #[cfg(feature = "b-winit")]
-            BackendType::Winit => {
-                WinitBackend::create(callback)?;
-            }
-        }
-        Ok(())
-    }
+pub struct Backend {
+    window_backend: WindowBackend,
+    // An Optional so it can be taken out for transforming, should never actually be 'None'
+    renderer_data: RwLock<RendererData>
 }
 
 #[enum_dispatch]
@@ -85,4 +52,55 @@ pub trait BackendTrait {
     fn exit(&self);
     fn subscribe_events(&self, callback: impl FnMut(Vec<BackendEvent>));
     fn flush_events(&self) -> Vec<BackendEvent>;
+}
+
+impl Backend {
+    pub fn create(callback: impl FnOnce(Backend) + Copy + Send + 'static) -> BResult<()> {
+        WindowBackend::create(move |window_backend| {
+            let backend = Self {
+                window_backend,
+                renderer_data: RwLock::new(RendererData::placeholder())
+            };
+
+            callback(backend);
+        })
+    }
+    
+    pub fn data(&self) -> RwLockReadGuard<RendererData> {
+        self.renderer_data.read().unwrap()
+    }
+
+    pub fn renderer_data(&self) -> RwLockReadGuard<RendererData> {
+        self.renderer_data.read().unwrap()
+    }
+
+    pub fn transform_renderer_data(&self, renderer: &Renderer) {
+        let mut data = self.renderer_data.write().unwrap();
+
+        if let Some(new) = data.transform_with(renderer) {
+            *data = new;
+        };
+    }
+}
+
+impl BackendTrait for Backend {
+    fn create_window(&self, info: WindowDetails) -> Window {
+        self.window_backend.create_window(info)
+    }
+
+    fn gl_proc_address(&self, proc_address: &str) ->  *const c_void {
+        self.window_backend.gl_proc_address(proc_address)
+    }
+
+    fn exit(&self) {
+        self.window_backend.exit()
+    }
+
+    fn subscribe_events(&self, callback: impl FnMut(Vec<BackendEvent>)) {
+        self.window_backend.subscribe_events(callback)
+    }
+
+    fn flush_events(&self) -> Vec<BackendEvent> {
+        self.window_backend.flush_events()
+    }
 }
