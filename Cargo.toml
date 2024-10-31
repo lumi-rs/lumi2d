@@ -18,7 +18,7 @@ log = "0.4.21"
 num-traits = "0.2.19"
 raw-window-handle = "0.6.2"
 skia-safe = { version = "0.78.2", optional = true, features = ["gpu", "svg", "textlayout"] }
-smol_str = "0.3.2"
+smol_str = "0.2.2"
 strum = { version = "0.26.2", features = ["derive"] }
 thiserror = "1.0.61"
 uuid = { version = "1.10.0", features = ["v4", "fast-rng"] }
