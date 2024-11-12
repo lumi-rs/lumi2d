@@ -130,6 +130,10 @@ impl<T> BackendTrait<T> for WinitBackend<T> {
     fn send_event(&self, event: Event<T>) {
         self.event_sender.send(event).unwrap();
     }
+
+    fn sender(&self) -> Sender<Event<T>> {
+        self.event_sender.clone()
+    }
 }
 
 

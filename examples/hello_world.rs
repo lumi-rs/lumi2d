@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::{Event, WindowEvent}, renderer_data::RendererDataTrait, windowing::window::{WindowDetails, WindowTrait}}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Backend, BackendTrait, Object};
+use lumi2d::prelude::*;
 use simple_logger::SimpleLogger;
 
 fn main() {

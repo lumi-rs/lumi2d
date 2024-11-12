@@ -139,7 +139,7 @@ impl WindowTrait for WinitWindow {
             WindowModes::Windowed => {
                 self.window.set_fullscreen(None);
                 self.window.set_maximized(false);
-            },
+            }
         }
     }
 

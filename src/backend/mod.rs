@@ -1,5 +1,6 @@
 use std::{ffi::c_void, sync::{RwLock, RwLockReadGuard}};
 
+use crossbeam_channel::Sender;
 use enum_dispatch::enum_dispatch;
 use events::Event;
 use renderer_data::{RendererData, RendererDataTrait};
@@ -56,6 +57,7 @@ pub trait BackendTrait<T> {
     fn send_custom(&self, custom_event: T) {
         self.send_event(Event::Custom(custom_event));
     }
+    fn sender(&self) -> Sender<Event<T>>;
 }
 
 
@@ -117,5 +119,9 @@ impl<T> BackendTrait<T> for Backend<T> {
 
     fn send_event(&self, event: Event<T>) {
         self.window_backend.send_event(event)
+    }
+
+    fn sender(&self) -> Sender<Event<T>> {
+        self.window_backend.sender()
     }
 }

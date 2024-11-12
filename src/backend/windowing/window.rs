@@ -1,7 +1,7 @@
 use enum_dispatch::enum_dispatch;
 use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle};
 
-use crate::{renderer::{RResult, Renderer}, structs::Dimensions, Backend};
+use crate::{renderer::{RResult, Renderer}, structs::Dimensions, types::Backend};
 
 
 

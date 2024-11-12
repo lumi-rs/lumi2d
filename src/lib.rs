@@ -4,9 +4,21 @@ pub mod structs;
 
 use std::sync::OnceLock;
 
-pub use renderer::objects::Object;
-pub use backend::{Backend, BackendTrait, windowing::window::{Window, WindowTrait, WindowDetails}};
+pub mod types {
+    pub use crate::renderer::{Renderer, RendererType, objects::*, images::*, svgs::*, text::*, errors::*};
+    pub use crate::backend::{Backend, BackendType, events::*, keys::*, windowing::{*, window::*}, renderer_data::RendererData};
+    pub use crate::structs::*;
+}
 
+pub mod traits {
+    pub use crate::{
+        backend::{BackendTrait, windowing::window::WindowTrait, renderer_data::RendererDataTrait},
+        renderer::{RendererTrait, text::ParagraphTrait}
+    };
+}
+pub mod prelude {
+    pub use crate::{types::*, traits::*};
+}
 
 static VSYNC: OnceLock<bool> = OnceLock::new();
 static POLLING: OnceLock<bool> = OnceLock::new();

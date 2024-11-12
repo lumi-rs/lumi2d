@@ -1,4 +1,4 @@
-use crate::{backend::{renderer_data::RendererData, windowing::window::{Window, WindowTrait}}, Object};
+use crate::{backend::{renderer_data::RendererData, windowing::window::{Window, WindowTrait}}, types::Object};
 
 use super::{errors::RendererError, RResult, RendererTrait};
 

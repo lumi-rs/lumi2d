@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
-use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, Object};
+use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, types::Object};
 
 use super::{text::SkiaParapgraph, SkiaRenderer};
 

@@ -15,7 +15,7 @@ pub mod wgpu;
 pub mod skia;
 
 
-use crate::{backend::{renderer_data::RendererData, windowing::window::Window}, Backend, Object};
+use crate::{backend::{renderer_data::RendererData, windowing::window::Window}, types::{Backend, Object}};
 
 use self::errors::RendererError;
 

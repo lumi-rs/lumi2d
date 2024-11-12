@@ -1,4 +1,4 @@
-use lumi2d::{backend::{events::{Event, WindowEvent}, BackendTrait}, renderer::RendererTrait, Backend};
+use lumi2d::prelude::*;
 
 fn main() {
     Backend::create(|backend| {
