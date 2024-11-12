@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use log::*;
-use lumi2d::{backend::{events::WindowEvent, renderer_data::RendererDataTrait, windowing::window::{WindowDetails, WindowTrait}}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Backend, BackendTrait, Object};
+use lumi2d::{backend::{events::{Event, WindowEvent}, renderer_data::RendererDataTrait, windowing::window::{WindowDetails, WindowTrait}}, renderer::{images::CacheableImage, objects::Rounding, svgs::CacheableSvg, text::ParagraphTrait, RendererTrait}, Backend, BackendTrait, Object};
 use simple_logger::SimpleLogger;
 
 fn main() {
@@ -57,18 +57,21 @@ fn main() {
             let frame_time = format!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
 
-            for backend_event in events {
-                match backend_event.event.scale_with(window.current_scale()) {
-                    WindowEvent::CloseRequested => {
-                        backend.exit();
-                        break;
-                    },
-                    WindowEvent::MouseScroll(_, y) => {
-                        window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
-                    },
-                    WindowEvent::WindowSize(_) => {
-                        renderer.recreate(&window)
-                    },
+            for event in events {
+                match event {
+                    Event::Backend(backend_event) => match backend_event.event.scale_with(window.current_scale()) {
+                        WindowEvent::CloseRequested => {
+                            backend.exit();
+                            break;
+                        },
+                        WindowEvent::MouseScroll(_, y) => {
+                            window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
+                        },
+                        WindowEvent::WindowSize(_) => {
+                            renderer.recreate(&window)
+                        },
+                        _ => {}
+                    }
                     _ => {}
                 }
             }

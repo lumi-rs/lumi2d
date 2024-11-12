@@ -46,7 +46,7 @@ pub enum Renderer {
 }
 
 impl Renderer {
-    pub fn create(backend: &Backend, window: &Window) -> RResult<Renderer> {
+    pub fn create<T>(backend: &Backend<T>, window: &Window) -> RResult<Renderer> {
         let renderers = RendererType::iter();
         for typ in renderers {
             match Self::create_type(&typ, window) {

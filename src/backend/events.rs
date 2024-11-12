@@ -4,7 +4,7 @@ use smol_str::SmolStr;
 
 use crate::structs::{Dimensions, Position};
 
-use super::keys::*;
+use super::{keys::*, windowing::window::WindowId};
 
 
 /// An enum of all the possible events a window can emit.  
@@ -41,4 +41,18 @@ impl WindowEvent {
             other => other
         }
     }
+}
+
+
+#[derive(Debug, PartialEq)]
+pub struct BackendEvent {
+    pub event: WindowEvent,
+    pub window_id: WindowId
+}
+
+
+#[derive(Debug)]
+pub enum Event<T> {
+    Backend(BackendEvent),
+    Custom(T)
 }

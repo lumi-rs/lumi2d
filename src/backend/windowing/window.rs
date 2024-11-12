@@ -3,8 +3,6 @@ use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowH
 
 use crate::{renderer::{RResult, Renderer}, structs::Dimensions, Backend};
 
-use crate::backend::events::WindowEvent;
-
 
 
 #[derive(Debug)]
@@ -41,7 +39,7 @@ pub enum Window {
 }
 
 impl Window {
-    pub fn create_renderer(&self, backend: &Backend) -> RResult<Renderer> {
+    pub fn create_renderer<T>(&self, backend: &Backend<T>) -> RResult<Renderer> {
         Renderer::create(backend, self)
     }
 }
@@ -59,13 +57,6 @@ pub trait WindowTrait {
     fn close(self);
 }
 
-
-
-#[derive(Debug, PartialEq)]
-pub struct BackendEvent {
-    pub event: WindowEvent,
-    pub window_id: WindowId
-}
 
 
 #[derive(Debug, PartialEq, Eq, Hash)]

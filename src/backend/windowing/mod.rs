@@ -19,16 +19,16 @@ use self::winit::*;
 use super::{errors::{BackendError, BackendInitError}, BResult, BackendType};
 
 #[derive(Debug)]
-#[enum_dispatch(BackendTrait)]
-pub enum WindowBackend {
+#[enum_dispatch(BackendTrait<T>)]
+pub enum WindowBackend<T> {
     #[cfg(feature = "b-winit")]
-    Winit(WinitBackend),
+    Winit(WinitBackend<T>),
     #[cfg(feature = "b-glfw")]
-    Glfw(GlfwBackend)
+    Glfw(GlfwBackend<T>)
 }
 
-impl WindowBackend {
-    pub fn create(callback: impl FnOnce(WindowBackend) + Copy + Send + 'static) -> BResult<()> {
+impl<T> WindowBackend<T> {
+    pub fn create(callback: impl FnOnce(WindowBackend<T>) + Copy + Send + 'static) -> BResult<()> {
         let backends = BackendType::iter();
         for typ in backends {
             match Self::create_type(&typ, callback) {
@@ -39,7 +39,7 @@ impl WindowBackend {
         Err(BackendError::Init(BackendInitError::NoBackend))
     }
 
-    pub fn create_type(backend: &BackendType, callback: impl FnOnce(WindowBackend) + Send + 'static) -> BResult<()> {
+    pub fn create_type(backend: &BackendType, callback: impl FnOnce(WindowBackend<T>) + Send + 'static) -> BResult<()> {
         match backend {
             #[cfg(feature = "b-glfw")]
             BackendType::Glfw => {

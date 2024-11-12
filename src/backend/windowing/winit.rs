@@ -1,5 +1,6 @@
-use std::{cell::Cell, ffi::c_void, sync::mpsc::{self, Receiver, Sender}};
+use std::{cell::Cell, ffi::c_void};
 
+use crossbeam_channel::{unbounded, Receiver, Sender};
 use log::*;
 use winit::{
     application::ApplicationHandler,
@@ -10,34 +11,40 @@ use winit::{
     window::{Fullscreen, WindowAttributes}
 };
 
-use crate::backend::{events::WindowEvent, keys::{KeyAction, Modifiers}, windowing::window::{BackendEvent, Window, WindowDetails, WindowId, WindowModes}, BResult, BackendTrait};
+use crate::backend::{events::{BackendEvent, Event, WindowEvent}, keys::{KeyAction, Modifiers}, windowing::window::{Window, WindowDetails, WindowId, WindowModes}, BResult, BackendTrait};
 
 use super::{winit_window::WinitWindow, WindowBackend};
 
 
 #[derive(Debug)]
-pub struct WinitBackend {
-    message_proxy: EventLoopProxy<WinitMessage>,
-    response_receiver: Receiver<WinitResponse>,
-    pub event_receiver: Receiver<BackendEvent>,
-    pub event_sender: Sender<BackendEvent>,
-    exiting: Cell<bool>
+pub struct WinitBackend<T> {
+    pub(crate) message_proxy: EventLoopProxy<WinitMessage>,
+    pub(crate) response_receiver: Receiver<WinitResponse>,
+    pub(crate) backend_event_receiver: Receiver<BackendEvent>,
+    pub(crate) event_receiver: Receiver<Event<T>>,
+    pub(crate) event_sender: Sender<Event<T>>,
+    pub(crate) exiting: Cell<bool>
 }
 
-impl WinitBackend {
-    pub fn create(callback: impl FnOnce(WindowBackend) + Send + 'static) -> BResult<()> {
-        let (response_sender, response_receiver) = mpsc::channel();
-        let (event_sender, event_receiver) = mpsc::channel();
-        
 
+impl<T> WinitBackend<T> {    
+    pub fn create(callback: impl FnOnce(WindowBackend<T>) + Send + 'static) -> BResult<()> {
+        let (response_sender, response_receiver) = unbounded();
+        let (event_sender, event_receiver) = unbounded();
+        
         let event_loop: EventLoop<WinitMessage> = EventLoop::with_user_event().build().unwrap();
         event_loop.set_control_flow(winit::event_loop::ControlFlow::Wait);
         let message_proxy = event_loop.create_proxy();
 
-        let cloned = event_sender.clone();
         std::thread::spawn(move || {
+            let (custom_sender, custom_receiver) = unbounded();
+
             callback(WindowBackend::Winit(WinitBackend {
-                message_proxy, response_receiver, event_receiver, event_sender: cloned,
+                message_proxy,
+                response_receiver,
+                backend_event_receiver: event_receiver,
+                event_receiver: custom_receiver,
+                event_sender: custom_sender,
                 exiting: Cell::new(false)
             }));
         });
@@ -58,7 +65,7 @@ impl WinitBackend {
     }
 }
 
-impl BackendTrait for WinitBackend {
+impl<T> BackendTrait<T> for WinitBackend<T> {
     fn create_window(&self, info: WindowDetails) -> Window {
         self.send_message(WinitMessage::CreateWindow(info));
 
@@ -81,32 +88,47 @@ impl BackendTrait for WinitBackend {
         self.send_message(WinitMessage::Exit);
     }
 
-    fn subscribe_events(&self, mut callback: impl FnMut(Vec<BackendEvent>)) {
+    fn subscribe_events(&self, mut callback: impl FnMut(Vec<Event<T>>)) {
         if crate::polling() {
             while !self.exiting.get() {
                 callback(self.flush_events());
             }
         } else {
-            while let Ok(event) = self.event_receiver.recv() {
-                let mut events = Vec::with_capacity(4);
-                events.push(event);
-    
-                while let Ok(queued_event) = self.event_receiver.try_recv() {
-                    events.push(queued_event);
+            loop {
+                crossbeam_channel::select_biased! {
+                    recv(self.backend_event_receiver) -> event => {
+                        self.event_sender.send(Event::Backend(event.unwrap())).unwrap();
+                    }
+                    recv(self.event_receiver) -> event => {
+                        let mut events = Vec::with_capacity(6);
+                        events.push(event.unwrap());
+
+                        while let Ok(queued_event) = self.event_receiver.try_recv() {
+                            events.push(queued_event);
+                        }
+
+                        callback(events);
+
+                        if self.exiting.get() { break; };
+                    }
                 }
-    
-                callback(events);
-                if self.exiting.get() { break; }
             }
         }
     }
 
-    fn flush_events(&self) -> Vec<BackendEvent> {
-        let mut events = Vec::with_capacity(4);
+    fn flush_events(&self) -> Vec<Event<T>> {
+        let mut events = Vec::with_capacity(6);
+        while let Ok(event) = self.backend_event_receiver.try_recv() {
+            events.push(Event::Backend(event));
+        }
         while let Ok(event) = self.event_receiver.try_recv() {
             events.push(event);
         }
         events
+    }
+
+    fn send_event(&self, event: Event<T>) {
+        self.event_sender.send(event).unwrap();
     }
 }
 
@@ -177,13 +199,13 @@ impl ApplicationHandler<WinitMessage> for WinitApp {
 
 
 #[derive(Debug)]
-enum WinitMessage {
+pub(crate) enum WinitMessage {
     CreateWindow(WindowDetails),
     Exit
 }
 
 #[derive(Debug)]
-enum WinitResponse {
+pub(crate) enum WinitResponse {
     CreateWindow(winit::window::Window)
 }
 

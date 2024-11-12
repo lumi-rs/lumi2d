@@ -1,9 +1,10 @@
 use std::{ffi::c_void, sync::{RwLock, RwLockReadGuard}};
 
 use enum_dispatch::enum_dispatch;
+use events::Event;
 use renderer_data::{RendererData, RendererDataTrait};
 use strum::{EnumIter, IntoEnumIterator};
-use windowing::{window::BackendEvent, WindowBackend};
+use windowing::WindowBackend;
 
 use crate::renderer::Renderer;
 
@@ -39,23 +40,33 @@ impl Default for BackendType {
 }
 
 #[derive(Debug)]
-pub struct Backend {
-    window_backend: WindowBackend,
-    // An Optional so it can be taken out for transforming, should never actually be 'None'
+pub struct Backend<T> {
+    window_backend: WindowBackend<T>,
     renderer_data: RwLock<RendererData>
 }
 
 #[enum_dispatch]
-pub trait BackendTrait {
+pub trait BackendTrait<T> {
     fn create_window(&self, info: WindowDetails) -> Window;
     fn gl_proc_address(&self, proc_address: &str) -> *const c_void;
     fn exit(&self);
-    fn subscribe_events(&self, callback: impl FnMut(Vec<BackendEvent>));
-    fn flush_events(&self) -> Vec<BackendEvent>;
+    fn subscribe_events(&self, callback: impl FnMut(Vec<Event<T>>));
+    fn flush_events(&self) -> Vec<Event<T>>;
+    fn send_event(&self, event: Event<T>);
+    fn send_custom(&self, custom_event: T) {
+        self.send_event(Event::Custom(custom_event));
+    }
 }
 
-impl Backend {
-    pub fn create(callback: impl FnOnce(Backend) + Copy + Send + 'static) -> BResult<()> {
+
+impl Backend<()> {
+    pub fn create(callback: impl FnOnce(Backend<()>) + Copy + Send + 'static) -> BResult<()> {
+        Self::create_custom(callback)
+    }
+}
+
+impl<T> Backend<T> {
+    pub fn create_custom(callback: impl FnOnce(Backend<T>) + Copy + Send + 'static) -> BResult<()> {
         WindowBackend::create(move |window_backend| {
             let backend = Self {
                 window_backend,
@@ -83,12 +94,12 @@ impl Backend {
     }
 }
 
-impl BackendTrait for Backend {
+impl<T> BackendTrait<T> for Backend<T> {
     fn create_window(&self, info: WindowDetails) -> Window {
         self.window_backend.create_window(info)
     }
 
-    fn gl_proc_address(&self, proc_address: &str) ->  *const c_void {
+    fn gl_proc_address(&self, proc_address: &str) -> *const c_void {
         self.window_backend.gl_proc_address(proc_address)
     }
 
@@ -96,11 +107,15 @@ impl BackendTrait for Backend {
         self.window_backend.exit()
     }
 
-    fn subscribe_events(&self, callback: impl FnMut(Vec<BackendEvent>)) {
+    fn subscribe_events(&self, callback: impl FnMut(Vec<Event<T>>)) {
         self.window_backend.subscribe_events(callback)
     }
 
-    fn flush_events(&self) -> Vec<BackendEvent> {
+    fn flush_events(&self) -> Vec<Event<T>> {
         self.window_backend.flush_events()
+    }
+
+    fn send_event(&self, event: Event<T>) {
+        self.window_backend.send_event(event)
     }
 }

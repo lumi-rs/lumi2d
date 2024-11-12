@@ -1,4 +1,4 @@
-use lumi2d::{backend::{events::WindowEvent, keys::KeyAction, renderer_data::RendererDataTrait, windowing::window::{Window, WindowDetails, WindowTrait}, BackendTrait}, renderer::{Renderer, RendererTrait}, Backend, Object};
+use lumi2d::{backend::{events::{Event, WindowEvent}, keys::KeyAction, renderer_data::RendererDataTrait, windowing::window::{Window, WindowDetails, WindowTrait}, BackendTrait}, renderer::{Renderer, RendererTrait}, Backend, Object};
 
 fn main() {
     Backend::create(|backend| {
@@ -16,30 +16,33 @@ fn main() {
 
         backend.subscribe_events(|events| {
             for event in &events {
-                match event.event {
-                    WindowEvent::MouseButton(1, KeyAction::Release) => {
-                        println!("Opening window!");
-                        let window = backend.create_window(WindowDetails {
-                            title: (windows.len()).to_string(),
-                            ..Default::default()
-                        });
-                        let renderer = window.create_renderer(&backend).unwrap();
-                        backend.data().register_font(font_bytes, "");
-        
-                        windows.push((window, renderer));
-                    },
-                    WindowEvent::CloseRequested => {
-                        let index = windows.iter().position(|(win, _)| win.id() == event.window_id).unwrap();
-                        windows.remove(index).0.close();
-                        if windows.is_empty() {
-                            backend.exit();
-                        }
-                    },
-                    WindowEvent::WindowSize(_) => {
-                        windows.iter()
-                        .find(|(win, _)| win.id() == event.window_id)
-                        .map(|(win, renderer)| renderer.recreate(win));
-                    },
+                match event {
+                    Event::Backend(event) => match event.event {
+                        WindowEvent::MouseButton(1, KeyAction::Release) => {
+                            println!("Opening window!");
+                            let window = backend.create_window(WindowDetails {
+                                title: (windows.len()).to_string(),
+                                ..Default::default()
+                            });
+                            let renderer = window.create_renderer(&backend).unwrap();
+                            backend.data().register_font(font_bytes, "");
+            
+                            windows.push((window, renderer));
+                        },
+                        WindowEvent::CloseRequested => {
+                            let index = windows.iter().position(|(win, _)| win.id() == event.window_id).unwrap();
+                            windows.remove(index).0.close();
+                            if windows.is_empty() {
+                                backend.exit();
+                            }
+                        },
+                        WindowEvent::WindowSize(_) => {
+                            windows.iter()
+                            .find(|(win, _)| win.id() == event.window_id)
+                            .map(|(win, renderer)| renderer.recreate(win));
+                        },
+                        _ => {}
+                    }
                     _ => {}
                 }
             }
