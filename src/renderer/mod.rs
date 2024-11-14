@@ -22,7 +22,7 @@ use self::errors::RendererError;
 pub type RResult<T> = core::result::Result<T, RendererError>;
 
 
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, Clone, Copy)]
 pub enum RendererType {
     #[cfg(feature = "r-wgpu")]
     Wgpu,

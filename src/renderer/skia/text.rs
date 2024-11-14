@@ -1,4 +1,4 @@
-use std::{num::NonZeroU32, sync::Arc};
+use std::{num::NonZeroU32, rc::Rc};
 
 use skia_safe::{font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, Font, FontStyle};
 
@@ -66,7 +66,7 @@ impl SkiaParapgraph {
     }
 }
 
-impl ParagraphTrait for Arc<SkiaParapgraph> {
+impl ParagraphTrait for Rc<SkiaParapgraph> {
     fn options(&self) -> &TextOptions {
         &self.options
     }

@@ -2,6 +2,7 @@ use std::num::NonZeroU32;
 
 use enum_dispatch::enum_dispatch;
 use placeholder::PlaceholderRendererData;
+use strum::EnumTryAs;
 
 use crate::renderer::{images::CacheableImage, svgs::CacheableSvg, text::{Paragraph, TextOptions}, Renderer};
 
@@ -11,7 +12,7 @@ pub mod placeholder;
 pub mod skia;
 
 
-#[derive(Debug, strum::EnumTryAs)]
+#[derive(Debug, EnumTryAs)]
 #[enum_dispatch(RendererDataTrait)]
 pub enum RendererData {
     Placeholder(placeholder::PlaceholderRendererData),

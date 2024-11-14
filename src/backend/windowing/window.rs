@@ -5,7 +5,7 @@ use crate::{renderer::{RResult, Renderer}, structs::Dimensions, types::Backend};
 
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WindowDetails {
     pub width: u32,
     pub height: u32,
@@ -59,7 +59,7 @@ pub trait WindowTrait {
 
 
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum WindowId {
     #[cfg(feature = "b-winit")]
     Winit(winit::window::WindowId)
@@ -82,13 +82,13 @@ impl<'a> WindowHandles<'a> {
     }
 }
 
-impl<'a> HasWindowHandle for WindowHandles<'a> {
+impl HasWindowHandle for WindowHandles<'_> {
     fn window_handle(&self) -> Result<WindowHandle, HandleError> {
         Ok(self.window)
     }
 }
 
-impl<'a> HasDisplayHandle for WindowHandles<'a> {
+impl HasDisplayHandle for WindowHandles<'_> {
     fn display_handle(&self) -> Result<DisplayHandle, HandleError> {
         Ok(self.display)
     }

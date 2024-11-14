@@ -26,7 +26,7 @@ pub mod errors;
 pub type BResult<T> = Result<T, BackendError>;
 
 
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, Clone, Copy)]
 pub enum BackendType {
     #[cfg(feature = "b-winit")]
     Winit,

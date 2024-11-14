@@ -3,7 +3,7 @@ use std::ops::{Div, Mul};
 use num_traits::AsPrimitive;
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Dimensions {
     pub width: u32,
     pub height: u32
@@ -42,7 +42,7 @@ impl Div<f32> for Dimensions {
 }
 
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Position<T> {
     pub x: T,
     pub y: T

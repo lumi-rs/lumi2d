@@ -2,7 +2,7 @@ use log::warn;
 use winit::keyboard::KeyCode;
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum KeyAction {
     Press,
     Hold,
@@ -10,7 +10,7 @@ pub enum KeyAction {
 }
 
 bitflags::bitflags! {
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct Modifiers: u8 {
         const Shift = 1;
         const Control = 1 << 1;

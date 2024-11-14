@@ -5,8 +5,8 @@ pub mod structs;
 use std::sync::OnceLock;
 
 pub mod types {
-    pub use crate::renderer::{Renderer, RendererType, objects::*, images::*, svgs::*, text::*, errors::*};
-    pub use crate::backend::{Backend, BackendType, events::*, keys::*, windowing::{*, window::*}, renderer_data::RendererData};
+    pub use crate::renderer::{Renderer, RendererType, RResult, objects::*, images::*, svgs::*, text::*, errors::*};
+    pub use crate::backend::{Backend, BackendType, BResult, events::*, keys::*, windowing::{*, window::*}, renderer_data::RendererData};
     pub use crate::structs::*;
 }
 
