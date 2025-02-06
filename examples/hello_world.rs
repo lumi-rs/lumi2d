@@ -61,7 +61,7 @@ fn main() {
                 match event {
                     Event::Backend(backend_event) => match backend_event.event.scale_with(window.current_scale()) {
                         WindowEvent::CloseRequested => {
-                            backend.exit();
+                            backend.unsubscribe();
                             break;
                         },
                         WindowEvent::MouseScroll(_, y) => {
@@ -86,5 +86,7 @@ fn main() {
                 .collect()
             ).unwrap();
         });
+
+        backend.exit();
     }).unwrap();
 }

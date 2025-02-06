@@ -52,6 +52,7 @@ pub trait BackendTrait<T> {
     fn gl_proc_address(&self, proc_address: &str) -> *const c_void;
     fn exit(&self);
     fn subscribe_events(&self, callback: impl FnMut(Vec<Event<T>>));
+    fn unsubscribe(&self);
     fn flush_events(&self) -> Vec<Event<T>>;
     fn send_event(&self, event: Event<T>);
     fn send_custom(&self, custom_event: T) {
@@ -111,6 +112,10 @@ impl<T> BackendTrait<T> for Backend<T> {
 
     fn subscribe_events(&self, callback: impl FnMut(Vec<Event<T>>)) {
         self.window_backend.subscribe_events(callback)
+    }
+
+    fn unsubscribe(&self) {
+        self.window_backend.unsubscribe();
     }
 
     fn flush_events(&self) -> Vec<Event<T>> {

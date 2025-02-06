@@ -23,7 +23,7 @@ pub struct WinitBackend<T> {
     pub(crate) backend_event_receiver: Receiver<BackendEvent>,
     pub(crate) event_receiver: Receiver<Event<T>>,
     pub(crate) event_sender: Sender<Event<T>>,
-    pub(crate) exiting: Cell<bool>
+    pub(crate) unsubscribe: Cell<bool>
 }
 
 
@@ -45,7 +45,7 @@ impl<T> WinitBackend<T> {
                 backend_event_receiver: event_receiver,
                 event_receiver: custom_receiver,
                 event_sender: custom_sender,
-                exiting: Cell::new(false)
+                unsubscribe: Cell::new(false)
             }));
         });
 
@@ -84,13 +84,19 @@ impl<T> BackendTrait<T> for WinitBackend<T> {
     }
 
     fn exit(&self) {
-        self.exiting.set(true);
+        self.unsubscribe.set(true);
         self.send_message(WinitMessage::Exit);
     }
 
+    fn unsubscribe(&self) {
+        self.unsubscribe.set(true);
+    }
+
     fn subscribe_events(&self, mut callback: impl FnMut(Vec<Event<T>>)) {
+        self.unsubscribe.set(false);
+        
         if crate::polling() {
-            while !self.exiting.get() {
+            while !self.unsubscribe.get() {
                 callback(self.flush_events());
             }
         } else {
@@ -109,7 +115,7 @@ impl<T> BackendTrait<T> for WinitBackend<T> {
 
                         callback(events);
 
-                        if self.exiting.get() { break; };
+                        if self.unsubscribe.get() { break; };
                     }
                 }
             }
