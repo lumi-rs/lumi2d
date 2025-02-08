@@ -86,6 +86,7 @@ impl<T> BackendTrait<T> for WinitBackend<T> {
     fn exit(&self) {
         self.unsubscribe.set(true);
         self.send_message(WinitMessage::Exit);
+        self.receive_response();
     }
 
     fn unsubscribe(&self) {
@@ -161,6 +162,11 @@ impl ApplicationHandler<WinitMessage> for WinitApp {
         //self.window = Some(event_loop.create_window(Window::default_attributes()).unwrap());
     }
 
+    fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
+        debug!("Exiting event loop...");
+        self.respond(WinitResponse::Exiting);
+    }
+
     fn window_event(&mut self, _event_loop: &ActiveEventLoop, window_id: winit::window::WindowId, event: WinitEvent) {
         if let Some(event) = convert_event(event) {
             self.event_sender.send(BackendEvent {
@@ -216,7 +222,8 @@ pub(crate) enum WinitMessage {
 
 #[derive(Debug)]
 pub(crate) enum WinitResponse {
-    CreateWindow(winit::window::Window)
+    CreateWindow(winit::window::Window),
+    Exiting
 }
 
 fn convert_event(event: WinitEvent) -> Option<WindowEvent> {
