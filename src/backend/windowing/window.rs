@@ -1,7 +1,7 @@
 use enum_dispatch::enum_dispatch;
 use raw_window_handle::{DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, WindowHandle};
 
-use crate::{renderer::{RResult, Renderer}, structs::Dimensions, types::Backend};
+use crate::{renderer::{RResult, Renderer}, structs::Dimensions, types::{Backend, RendererData}};
 
 
 
@@ -54,7 +54,7 @@ pub trait WindowTrait {
     fn current_scale(&self) -> f32;
     fn set_scale(&self, scale: f32);
     fn id(&self) -> WindowId;
-    fn close(self);
+    fn close(self, renderer_data: &RendererData);
 }
 
 

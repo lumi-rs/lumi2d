@@ -3,6 +3,7 @@ use std::{ffi::c_void, sync::{RwLock, RwLockReadGuard}};
 use crossbeam_channel::Sender;
 use enum_dispatch::enum_dispatch;
 use events::Event;
+use log::error;
 use renderer_data::{RendererData, RendererDataTrait};
 use strum::{EnumIter, IntoEnumIterator};
 use windowing::WindowBackend;
@@ -42,8 +43,8 @@ impl Default for BackendType {
 
 #[derive(Debug)]
 pub struct Backend<T> {
-    window_backend: WindowBackend<T>,
-    renderer_data: RwLock<RendererData>
+    renderer_data: RwLock<RendererData>,
+    window_backend: WindowBackend<T>
 }
 
 #[enum_dispatch]
@@ -93,6 +94,8 @@ impl<T> Backend<T> {
 
         if let Some(new) = data.transform_with(renderer) {
             *data = new;
+        } else {
+            error!("Failed to transform renderer data!");
         };
     }
 }

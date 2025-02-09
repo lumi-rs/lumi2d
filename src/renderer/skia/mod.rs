@@ -49,7 +49,7 @@ impl RendererTrait for SkiaRenderer {
             let skia_data = data.try_as_skia_ref().unwrap();
 
             for object in objects {
-                adapter::draw_object(self, skia_data, canvas, object, scale);
+                adapter::draw_object(self, skia_data, canvas, object, scale, window.id());
             }
         })
     }

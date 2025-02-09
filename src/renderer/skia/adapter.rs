@@ -2,11 +2,11 @@ use std::rc::Rc;
 
 use skia_safe::{canvas::Lattice, color_filters, svg::Dom, AlphaType, BlendMode, Canvas, Color4f, ColorType, Data, FilterMode, Font, FontMgr, ImageInfo, Paint, PaintStyle, Point, RRect, Rect, SamplingOptions, TextBlob};
 
-use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, types::Object};
+use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::{images::{CacheableImage, PixelFormat}, objects, svgs::CacheableSvg}, types::{Object, WindowId}};
 
 use super::{text::SkiaParapgraph, SkiaRenderer};
 
-pub(crate) fn draw_object(_renderer: &SkiaRenderer, data: &SkiaRendererData, canvas: &Canvas, object: &Object, scale: f32) {
+pub(crate) fn draw_object(_renderer: &SkiaRenderer, data: &SkiaRendererData, canvas: &Canvas, object: &Object, scale: f32, window_id: WindowId) {
     match object {
         Object::Rectangle { rounding, color, rect } => {
             let paint = paint(*color, 1.0);
@@ -84,7 +84,7 @@ pub(crate) fn draw_object(_renderer: &SkiaRenderer, data: &SkiaRendererData, can
         },
         Object::Svg { rect, svg, color } => {
             let rect = rect.clone() * scale;
-            let mut svg = data.get_or_load_svg(svg, canvas, rect.width, rect.height);
+            let mut svg = data.get_or_load_svg(svg, canvas, rect.width, rect.height, window_id);
             let mut paint = paint(*color, 0.0);
 
             paint.set_color_filter(color_filters::blend(rgba_to_color4f(*color).to_color(), BlendMode::SrcIn));

@@ -2,7 +2,7 @@ use std::{cell::{Cell, RefCell}, collections::HashMap};
 
 use skia_safe::{textlayout::{FontCollection, TypefaceFontProvider}, FontMgr};
 
-use crate::renderer::{images::CacheableImage, svgs::CacheableSvg, Renderer};
+use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, Renderer}, types::WindowId};
 
 use super::{skia::SkiaRendererData, RendererData, RendererDataTrait};
 
@@ -86,5 +86,9 @@ impl RendererDataTrait for PlaceholderRendererData {
                 Some(RendererData::Skia(new))
             },
         }
+    }
+
+    fn remove_window_data(&self, _window_id: &WindowId) {
+        // Nothing needed here
     }
 }

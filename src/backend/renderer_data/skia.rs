@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::HashMap};
 use skia_safe::{svg::Dom, textlayout::{FontCollection, TypefaceFontProvider}, wrapper::PointerWrapper, Canvas, FontMgr, Typeface};
 use uuid::Uuid;
 
-use crate::renderer::{images::CacheableImage, skia::adapter, svgs::CacheableSvg};
+use crate::{renderer::{images::CacheableImage, skia::adapter, svgs::CacheableSvg}, types::WindowId};
 
 use super::RendererDataTrait;
 
@@ -18,6 +18,21 @@ pub struct SkiaRendererData {
     pub image_cache: RefCell<HashMap<Uuid, skia_safe::Image>>,
     pub(crate) svg_cache: RefCell<HashMap<Uuid, SkiaCachedSvg>>
 }
+
+
+impl Drop for SkiaRendererData {
+    fn drop(&mut self) {
+        let cache = self.svg_cache.take();
+        
+        for (_, svg) in cache.into_iter() {
+            if let Some(_) = svg.associated_window() {
+                // Don't run the destructor, otherwise it will cause a double free and Segfault
+                std::mem::forget(svg);
+            }
+        }
+    }
+}
+
 
 impl SkiaRendererData {
     pub fn new() -> Self {
@@ -62,20 +77,20 @@ impl SkiaRendererData {
         }
     }
 
-    pub(crate) fn get_or_load_svg(&self, svg: &CacheableSvg, canvas: &Canvas, width: u32, height: u32) -> SvgWithSurface {
+    pub(crate) fn get_or_load_svg(&self, svg: &CacheableSvg, canvas: &Canvas, width: u32, height: u32, window: WindowId) -> SvgWithSurface {
         let mut cache = self.svg_cache.borrow_mut();
 
         if let Some(cached_svg) = cache.get_mut(svg.uuid()) {
             match cached_svg {
                 SkiaCachedSvg::Surface(svgws) => {
                     if (svgws.width, svgws.height) != (width, height) {
-                        *svgws = svg_dom_to_with_surface(svgws.dom.clone(), canvas, width, height)
+                        *svgws = svg_dom_to_with_surface(svgws.dom.clone(), canvas, width, height, window)
                     }
 
                     svgws.clone()
                 },
                 SkiaCachedSvg::Dom(dom) => {
-                    let svg_with_surface = svg_dom_to_with_surface(dom.clone(), canvas, width, height);
+                    let svg_with_surface = svg_dom_to_with_surface(dom.clone(), canvas, width, height, window);
                     *cached_svg = SkiaCachedSvg::Surface(svg_with_surface.clone());
                     svg_with_surface
                 },
@@ -83,7 +98,7 @@ impl SkiaRendererData {
         } else {
             let dom = adapter::svg_to_skia(svg, self.get_font_mgr());
     
-            let svg_with_surface = svg_dom_to_with_surface(dom, canvas, width, height);
+            let svg_with_surface = svg_dom_to_with_surface(dom, canvas, width, height, window);
 
             cache.insert(*svg.uuid(), SkiaCachedSvg::Surface(svg_with_surface.clone()));
             svg_with_surface
@@ -147,6 +162,25 @@ impl RendererDataTrait for SkiaRendererData {
     fn transform_with(&self, _renderer: &crate::renderer::Renderer) -> Option<super::RendererData> {
         None
     }
+
+    fn remove_window_data(&self, window_id: &WindowId) {
+        println!("AAA");
+        let mut svgs = self.svg_cache.borrow_mut();
+        let mut to_remove = Vec::new();
+
+        for (uuid, svg) in svgs.iter() {
+            if let Some(associated) = svg.associated_window() {
+                if window_id == associated {
+                    to_remove.push(uuid.clone());
+                }
+            }
+        }
+
+        for uuid in to_remove {
+            dbg!("Removing:", &uuid);
+            svgs.remove(&uuid);
+        }
+    }
 }
 
 
@@ -162,11 +196,21 @@ pub(crate) struct SvgWithSurface {
     pub dom: Dom,
     pub surface: skia_safe::Surface,
     pub width: u32,
-    pub height: u32
+    pub height: u32,
+    pub associate_window: WindowId
+}
+
+impl SkiaCachedSvg {
+    fn associated_window(&self) -> Option<&WindowId> {
+        match self {
+            SkiaCachedSvg::Surface(svg_with_surface) => Some(&svg_with_surface.associate_window),
+            _ => None
+        }
+    }
 }
 
 // Amazing function name, I know...
-fn svg_dom_to_with_surface(dom: Dom, canvas: &Canvas, width: u32, height: u32) -> SvgWithSurface {
+fn svg_dom_to_with_surface(dom: Dom, canvas: &Canvas, width: u32, height: u32, window: WindowId) -> SvgWithSurface {
     let size = dom.inner().fContainerSize;
 
     let mut surface = canvas.new_surface(&canvas.image_info(), None).unwrap();
@@ -179,6 +223,7 @@ fn svg_dom_to_with_surface(dom: Dom, canvas: &Canvas, width: u32, height: u32) -
         dom,
         surface,
         width,
-        height
+        height,
+        associate_window: window
     }
 }

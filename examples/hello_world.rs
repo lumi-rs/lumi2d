@@ -53,7 +53,8 @@ fn main() {
             Object::paragraph(30, 500, paragraph.clone())
         ]);
 
-        backend.subscribe_events(|events| {
+        let backend = &backend;
+        backend.subscribe_events(move |events| {
             let frame_time = format!("{:?}", Instant::now() - last_frame);
             last_frame = Instant::now();
 
@@ -87,6 +88,7 @@ fn main() {
             ).unwrap();
         });
 
-        backend.exit();
+        print!("a");
+        //backend.exit();
     }).unwrap();
 }

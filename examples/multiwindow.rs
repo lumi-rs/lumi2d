@@ -31,7 +31,7 @@ fn main() {
                         },
                         WindowEvent::CloseRequested => {
                             let index = windows.iter().position(|(win, _)| win.id() == event.window_id).unwrap();
-                            windows.remove(index).0.close();
+                            windows.remove(index).0.close(&backend.data());
                             if windows.is_empty() {
                                 backend.exit();
                             }

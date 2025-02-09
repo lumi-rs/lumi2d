@@ -9,7 +9,7 @@ use winit::{
     window::{Fullscreen, Window}
 };
 
-use crate::structs::Dimensions;
+use crate::{structs::Dimensions, traits::RendererDataTrait, types::RendererData};
 
 use crate::backend::{events::WindowEvent, keys::{KeyAction, Modifiers}, windowing::window::{WindowTrait, WindowHandles, WindowId, WindowModes}};
 
@@ -159,7 +159,8 @@ impl WindowTrait for WinitWindow {
         WindowId::Winit(self.window.id())
     }
 
-    fn close(self) {
+    fn close(self, renderer_data: &RendererData) {
+        renderer_data.remove_window_data(&self.id());
         // self is dropped, closing the window.
     }
 }

@@ -4,7 +4,7 @@ use enum_dispatch::enum_dispatch;
 use placeholder::PlaceholderRendererData;
 use strum::EnumTryAs;
 
-use crate::renderer::{images::CacheableImage, svgs::CacheableSvg, text::{Paragraph, TextOptions}, Renderer};
+use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, text::{Paragraph, TextOptions}, Renderer}, types::WindowId};
 
 
 pub mod placeholder;
@@ -52,4 +52,6 @@ pub trait RendererDataTrait {
     fn unload_svg(&self, svg: &CacheableSvg);
     /// Internal function
     fn transform_with(&self, renderer: &Renderer) -> Option<RendererData>;
+    /// Called when a Window is closed, to remove associated data from caches
+    fn remove_window_data(&self, window_id: &WindowId);
 }
