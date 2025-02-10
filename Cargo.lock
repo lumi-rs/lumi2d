@@ -668,6 +668,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "foldhash"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0d2fde1f7b3d48b8395d5f2de76c18a528bd6a9cdde438df747bfcba3e05d6f"
+
+[[package]]
 name = "foreign-types"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2578,13 +2584,14 @@ dependencies = [
 
 [[package]]
 name = "vulkano"
-version = "0.34.0"
-source = "git+https://github.com/vulkano-rs/vulkano.git#4b934725628a409de7e8360ce16a112bc485e006"
+version = "0.35.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08840c2b51759a6f88f26f5ea378bc8b5c199a5b4760ddda292304be087249c4"
 dependencies = [
- "ahash",
  "ash",
  "bytemuck",
  "crossbeam-queue",
+ "foldhash",
  "half",
  "heck 0.4.1",
  "indexmap",
@@ -2609,8 +2616,9 @@ dependencies = [
 
 [[package]]
 name = "vulkano-macros"
-version = "0.34.0"
-source = "git+https://github.com/vulkano-rs/vulkano.git#4b934725628a409de7e8360ce16a112bc485e006"
+version = "0.35.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1dc929c42c9336fd082079ac3ea30126e4a0dfe36fd2e2b3581303f7d140d20f"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",

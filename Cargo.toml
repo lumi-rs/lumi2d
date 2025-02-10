@@ -23,7 +23,7 @@ smol_str = "0.2"
 strum = { version = "0.26", features = ["derive"] }
 thiserror = "2"
 uuid = { version = "1.12", features = ["v4", "fast-rng"] }
-vulkano = { git = "https://github.com/vulkano-rs/vulkano.git", optional = true }
+vulkano = { version = "0.35", optional = true }
 wgpu = { version = "24", optional = true }
 winit = { version = "0.30", optional = true, default-features = false, features = ["rwh_06", "wayland", "wayland-dlopen", "x11"] }
 
