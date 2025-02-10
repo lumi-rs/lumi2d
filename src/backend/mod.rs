@@ -1,9 +1,8 @@
-use std::{ffi::c_void, sync::{RwLock, RwLockReadGuard}};
+use std::{cell::{Ref, RefCell}, ffi::c_void};
 
 use crossbeam_channel::Sender;
 use enum_dispatch::enum_dispatch;
 use events::Event;
-use log::error;
 use renderer_data::{RendererData, RendererDataTrait};
 use strum::{EnumIter, IntoEnumIterator};
 use windowing::WindowBackend;
@@ -43,7 +42,7 @@ impl Default for BackendType {
 
 #[derive(Debug)]
 pub struct Backend<T> {
-    renderer_data: RwLock<RendererData>,
+    renderer_data: RefCell<RendererData>,
     window_backend: WindowBackend<T>
 }
 
@@ -74,28 +73,26 @@ impl<T> Backend<T> {
         WindowBackend::create(move |window_backend| {
             let backend = Self {
                 window_backend,
-                renderer_data: RwLock::new(RendererData::placeholder())
+                renderer_data: RefCell::new(RendererData::placeholder())
             };
 
             callback(backend);
         })
     }
     
-    pub fn data(&self) -> RwLockReadGuard<RendererData> {
-        self.renderer_data.read().unwrap()
+    pub fn data(&self) -> Ref<RendererData> {
+        self.renderer_data.borrow()
     }
 
-    pub fn renderer_data(&self) -> RwLockReadGuard<RendererData> {
-        self.renderer_data.read().unwrap()
+    pub fn renderer_data(&self) -> Ref<RendererData> {
+        self.renderer_data.borrow()
     }
 
     pub fn transform_renderer_data(&self, renderer: &Renderer) {
-        let mut data = self.renderer_data.write().unwrap();
+        let mut data = self.renderer_data.borrow_mut();
 
         if let Some(new) = data.transform_with(renderer) {
             *data = new;
-        } else {
-            error!("Failed to transform renderer data!");
         };
     }
 }

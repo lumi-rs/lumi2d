@@ -164,7 +164,6 @@ impl RendererDataTrait for SkiaRendererData {
     }
 
     fn remove_window_data(&self, window_id: &WindowId) {
-        println!("AAA");
         let mut svgs = self.svg_cache.borrow_mut();
         let mut to_remove = Vec::new();
 
@@ -177,7 +176,6 @@ impl RendererDataTrait for SkiaRendererData {
         }
 
         for uuid in to_remove {
-            dbg!("Removing:", &uuid);
             svgs.remove(&uuid);
         }
     }
