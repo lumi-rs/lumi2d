@@ -1,10 +1,9 @@
 use std::{cell::{Cell, RefCell}, collections::HashMap};
 
-use skia_safe::{textlayout::{FontCollection, TypefaceFontProvider}, FontMgr};
 
 use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, Renderer}, types::WindowId};
 
-use super::{skia::SkiaRendererData, RendererData, RendererDataTrait};
+use super::{RendererData, RendererDataTrait};
 
 
 #[derive(Debug)]
@@ -58,7 +57,19 @@ impl RendererDataTrait for PlaceholderRendererData {
 
     fn transform_with(&self, renderer: &Renderer) -> Option<RendererData> {
         match renderer {
+            #[cfg(feature = "r-wgpu")]
+            Renderer::Wgpu(_) => {
+                unimplemented!()
+            },
+            #[cfg(feature = "r-vello")]
+            Renderer::Vello(_) => {
+                unimplemented!()
+            },
+            #[cfg(feature = "r-skia")]
             Renderer::Skia(_skia_renderer) => {
+                use skia_safe::{textlayout::{FontCollection, TypefaceFontProvider}, FontMgr};
+                use super::skia::SkiaRendererData;
+
                 let mut font_collection = FontCollection::new();
                 let font_mgr = FontMgr::new();
                 let font_provider = TypefaceFontProvider::new();

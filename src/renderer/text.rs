@@ -8,10 +8,12 @@ use crate::backend::renderer_data::RendererData;
 #[derive(Debug, Clone)]
 #[enum_dispatch(ParagraphTrait)]
 pub enum Paragraph {
-    #[cfg(feature = "r-skia")]
-    Skia(Rc<super::skia::text::SkiaParapgraph>),
     #[cfg(feature = "r-wgpu")]
-    Wgpu
+    Wgpu,
+    #[cfg(feature = "r-vello")]
+    Vello(Rc<super::vello::text::VelloParagraph>),
+    #[cfg(feature = "r-skia")]
+    Skia(Rc<super::skia::text::SkiaParapgraph>)
 }
 
 impl Paragraph {

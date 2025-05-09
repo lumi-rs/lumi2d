@@ -11,6 +11,8 @@ pub mod text;
 
 #[cfg(feature = "r-wgpu")]
 pub mod wgpu;
+#[cfg(feature = "r-vello")]
+pub mod vello;
 #[cfg(feature = "r-skia")]
 pub mod skia;
 
@@ -26,6 +28,8 @@ pub type RResult<T> = core::result::Result<T, RendererError>;
 pub enum RendererType {
     #[cfg(feature = "r-wgpu")]
     Wgpu,
+    #[cfg(feature = "r-vello")]
+    Vello,
     #[cfg(feature = "r-skia")]
     Skia,
 }
@@ -41,6 +45,8 @@ impl Default for RendererType {
 pub enum Renderer {
     #[cfg(feature = "r-wgpu")]
     Wgpu(self::wgpu::WgpuRenderer),
+    #[cfg(feature = "r-vello")]
+    Vello(self::vello::VelloRenderer),
     #[cfg(feature = "r-skia")]
     Skia(self::skia::SkiaRenderer),
 }
@@ -62,10 +68,18 @@ impl Renderer {
 
     pub fn create_type(typ: &RendererType, window: &Window) -> RResult<Renderer> {
         Ok(match typ {
+            #[cfg(feature = "r-wgpu")]
+            RendererType::Wgpu => {
+                unimplemented!()
+            },
+            #[cfg(feature = "r-vello")]
+            RendererType::Vello => {
+                self::vello::VelloRenderer::new()?.into()
+            },
             #[cfg(feature = "r-skia")]
             RendererType::Skia => {
-                Renderer::Skia(self::skia::SkiaRenderer::new(window)?)
-            },
+                self::skia::SkiaRenderer::new(window)?.into()
+            }
         })
     }
 }

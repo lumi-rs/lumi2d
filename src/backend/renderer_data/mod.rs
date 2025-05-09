@@ -8,6 +8,10 @@ use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, text::{Paragr
 
 
 pub mod placeholder;
+#[cfg(feature = "r-wgpu")]
+pub mod wgpu;
+#[cfg(feature = "r-vello")]
+pub mod vello;
 #[cfg(feature = "r-skia")]
 pub mod skia;
 
@@ -16,10 +20,12 @@ pub mod skia;
 #[enum_dispatch(RendererDataTrait)]
 pub enum RendererData {
     Placeholder(placeholder::PlaceholderRendererData),
-    #[cfg(feature = "r-skia")]
-    Skia(skia::SkiaRendererData),
     #[cfg(feature = "r-wgpu")]
-    Wgpu
+    Wgpu(wgpu::WgpuRendererData),
+    #[cfg(feature = "r-vello")]
+    Wgpu(vello::VelloRendererData),
+    #[cfg(feature = "r-skia")]
+    Skia(skia::SkiaRendererData)
 }
 
 impl RendererData {

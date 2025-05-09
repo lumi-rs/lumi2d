@@ -18,11 +18,13 @@ image = { version = "0.25", optional = true }
 log = "0.4"
 num-traits = "0.2"
 raw-window-handle = "0.6"
-skia-safe = { version = "0.81", optional = true, features = ["gpu", "svg", "textlayout"] }
+skia-safe = { version = "0", optional = true, features = ["gpu", "svg", "textlayout"] }
 smol_str = "0.2"
 strum = { version = "0.26", features = ["derive"] }
 thiserror = "2"
 uuid = { version = "1.12", features = ["v4", "fast-rng"] }
+vello = { version = "0.5.0", optional = true }
+vello_svg = { version = "0.6.0", optional = true }
 vulkano = { version = "0.35", optional = true }
 wgpu = { version = "24", optional = true }
 winit = { version = "0.30", optional = true, default-features = false, features = ["rwh_06", "wayland", "wayland-dlopen", "x11"] }
@@ -33,20 +35,23 @@ simple_logger = "5"
 
 
 [features]
-default = ["b-winit", "r-skia", "skia-vulkan"]
+default = ["b-winit", "r-vello"]
 # Backends, for interacting with the windowing system
 b-glfw = ["dep:glfw"]
 b-winit = ["dep:winit"]
 # Renderers, for ...rendering
 r-wgpu = ["dep:wgpu"]
+r-vello = ["dep:vello", "dep:vello_svg"]
 r-skia = ["dep:skia-safe"]
 # Skia rendering backends
-skia-vulkan = ["dep:vulkano", "dep:ash", "skia-safe/vulkan", "glfw?/vulkan"]
-skia-opengl = ["dep:glow", "skia-safe/gl"]
+skia-vulkan = ["dep:vulkano", "dep:ash", "skia-safe?/vulkan", "glfw?/vulkan"]
+skia-opengl = ["dep:glow", "skia-safe?/gl"]
 skia-d3d = []
 skia-metal = []
 
 image = ["dep:image"]
+vello = ["dep:vello"]
+vello_svg = ["dep:vello_svg"]
 
 [profile.release]
 lto = true
