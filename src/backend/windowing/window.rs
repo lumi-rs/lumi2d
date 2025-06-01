@@ -93,3 +93,6 @@ impl HasDisplayHandle for WindowHandles<'_> {
         Ok(self.display)
     }
 }
+
+unsafe impl Send for WindowHandles<'_> {}
+unsafe impl Sync for WindowHandles<'_> {}

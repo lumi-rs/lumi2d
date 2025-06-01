@@ -225,7 +225,7 @@ impl SkiaRenderingBackend for SkiaVulkanBackend {
 
     fn render(&self, window: &Window, canvas: impl FnOnce(&Canvas)) -> RResult<()> {
         let dimensions = window.physical_dimensions();
-        if dimensions.width == 0 || dimensions.height == 0 { return Ok(()) } // Skip frame if window size is zero (e.g. minimized)
+        if dimensions.width == 0 || dimensions.height == 0 { return Ok(()) } // Skip frame if window size is zero (e.g. when minimized)
 
         let image_extent = [dimensions.width, dimensions.height];
 

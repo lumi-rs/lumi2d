@@ -26,6 +26,13 @@ pub struct WinitBackend<T> {
     pub(crate) unsubscribe: Cell<bool>
 }
 
+impl<T> Drop for WinitBackend<T> {
+    fn drop(&mut self) {
+        self.send_message(WinitMessage::Exit);
+        self.receive_response();
+    }
+}
+
 
 impl<T> WinitBackend<T> {    
     pub fn create(callback: impl FnOnce(WindowBackend<T>) + Send + 'static) -> BResult<()> {
@@ -83,12 +90,6 @@ impl<T> BackendTrait<T> for WinitBackend<T> {
         todo!()
     }
 
-    fn exit(&self) {
-        self.unsubscribe.set(true);
-        self.send_message(WinitMessage::Exit);
-        self.receive_response();
-    }
-
     fn unsubscribe(&self) {
         self.unsubscribe.set(true);
     }
@@ -101,7 +102,7 @@ impl<T> BackendTrait<T> for WinitBackend<T> {
                 callback(self.flush_events());
             }
         } else {
-            loop {
+            while !self.unsubscribe.get() {
                 crossbeam_channel::select_biased! {
                     recv(self.backend_event_receiver) -> event => {
                         self.event_sender.send(Event::Backend(event.unwrap())).unwrap();

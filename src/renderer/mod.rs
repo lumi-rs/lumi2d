@@ -55,7 +55,8 @@ impl Renderer {
     pub fn create<T>(backend: &Backend<T>, window: &Window) -> RResult<Renderer> {
         let renderers = RendererType::iter();
         for typ in renderers {
-            match Self::create_type(&typ, window) {
+            let created = Self::create_type(&typ, window, &backend.renderer_data());
+            match created {
                 Ok(renderer) => {
                     backend.transform_renderer_data(&renderer);
                     return Ok(renderer)
@@ -66,7 +67,7 @@ impl Renderer {
         Err(RendererError::NoRenderer)
     }
 
-    pub fn create_type(typ: &RendererType, window: &Window) -> RResult<Renderer> {
+    pub fn create_type(typ: &RendererType, window: &Window, renderer_data: &RendererData) -> RResult<Renderer> {
         Ok(match typ {
             #[cfg(feature = "r-wgpu")]
             RendererType::Wgpu => {
@@ -74,7 +75,7 @@ impl Renderer {
             },
             #[cfg(feature = "r-vello")]
             RendererType::Vello => {
-                self::vello::VelloRenderer::new()?.into()
+                self::vello::VelloRenderer::new(window, renderer_data)?.into()
             },
             #[cfg(feature = "r-skia")]
             RendererType::Skia => {
@@ -87,5 +88,6 @@ impl Renderer {
 #[enum_dispatch]
 pub trait RendererTrait {
     fn render(&self, window: &Window, data: &RendererData, objects: Vec<&Object>) -> RResult<()>;
-    fn recreate(&self, window: &Window);
+    fn recreate(&self, window: &Window, data: &RendererData);
+    fn transform_data(&self, data: &RendererData) -> Option<RendererData>;
 }

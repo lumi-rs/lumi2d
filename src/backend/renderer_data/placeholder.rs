@@ -1,9 +1,9 @@
-use std::{cell::{Cell, RefCell}, collections::HashMap};
+use std::cell::{Cell, RefCell};
 
 
-use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, Renderer}, types::WindowId};
+use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg}, types::WindowId};
 
-use super::{RendererData, RendererDataTrait};
+use super::RendererDataTrait;
 
 
 #[derive(Debug)]
@@ -55,6 +55,7 @@ impl RendererDataTrait for PlaceholderRendererData {
         // self.svgs.borrow_mut().remove(svg.uuid());
     }
 
+    /*
     fn transform_with(&self, renderer: &Renderer) -> Option<RendererData> {
         match renderer {
             #[cfg(feature = "r-wgpu")]
@@ -98,6 +99,7 @@ impl RendererDataTrait for PlaceholderRendererData {
             },
         }
     }
+    */
 
     fn remove_window_data(&self, _window_id: &WindowId) {
         // Nothing needed here

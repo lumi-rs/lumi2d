@@ -23,6 +23,10 @@ impl Paragraph {
             RendererData::Skia(data) => Self::Skia(Rc::new(
                 super::skia::text::SkiaParapgraph::new(data, text, width, max_height, options)
             )),
+            #[cfg(feature = "r-vello")]
+            RendererData::Vello(data) => Self::Vello(Rc::new(
+                super::vello::text::VelloParagraph::new(data, text, width, max_height, options)
+            )),
             _ => panic!()
         }
     }

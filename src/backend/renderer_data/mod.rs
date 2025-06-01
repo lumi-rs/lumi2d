@@ -4,7 +4,7 @@ use enum_dispatch::enum_dispatch;
 use placeholder::PlaceholderRendererData;
 use strum::EnumTryAs;
 
-use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, text::{Paragraph, TextOptions}, Renderer}, types::WindowId};
+use crate::{renderer::{images::CacheableImage, svgs::CacheableSvg, text::{Paragraph, TextOptions}}, types::WindowId};
 
 
 pub mod placeholder;
@@ -23,7 +23,7 @@ pub enum RendererData {
     #[cfg(feature = "r-wgpu")]
     Wgpu(wgpu::WgpuRendererData),
     #[cfg(feature = "r-vello")]
-    Wgpu(vello::VelloRendererData),
+    Vello(vello::VelloRendererData),
     #[cfg(feature = "r-skia")]
     Skia(skia::SkiaRendererData)
 }
@@ -56,8 +56,8 @@ pub trait RendererDataTrait {
     fn load_svg(&self, svg: &CacheableSvg);
     /// Remove an SVG from the Renderer's cache. Needs to be called manually if the SVG should not be loaded permanently (for now).
     fn unload_svg(&self, svg: &CacheableSvg);
-    /// Internal function
-    fn transform_with(&self, renderer: &Renderer) -> Option<RendererData>;
+    // Internal function
+    // fn transform_with(&self, renderer: &Renderer) -> Option<RendererData>;
     /// Called when a Window is closed, to remove associated data from caches
     fn remove_window_data(&self, window_id: &WindowId);
 }

@@ -10,11 +10,11 @@ fn main() {
                 match event {
                     Event::Backend(backend_event) => match backend_event.event {
                         WindowEvent::CloseRequested => {
-                            backend.exit();
-                            break;
+                            backend.unsubscribe();
+                            return;
                         },
                         WindowEvent::Redraw => {
-                            renderer.recreate(&window);
+                            renderer.recreate(&window, &backend.renderer_data());
                         },
                         _ => {}
                     },

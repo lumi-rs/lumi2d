@@ -5,9 +5,11 @@ use lumi2d::prelude::*;
 use simple_logger::SimpleLogger;
 
 fn main() {
-    SimpleLogger::new().with_level(
-        LevelFilter::Debug
-    ).env().init().expect("Failed to initialize logger");
+    SimpleLogger::new()
+    .with_level(LevelFilter::Debug)
+    .with_module_level("naga", LevelFilter::Warn)
+    .with_module_level("wgpu_hal", LevelFilter::Off)
+    .env().init().expect("Failed to initialize logger");
 
     Backend::create(|backend| {
         let window = backend.create_window(WindowDetails {
@@ -62,14 +64,14 @@ fn main() {
                 match event {
                     Event::Backend(backend_event) => match backend_event.event.scale_with(window.current_scale()) {
                         WindowEvent::CloseRequested => {
-                            backend.exit();
-                            break;
+                            backend.unsubscribe();
+                            return;
                         },
                         WindowEvent::MouseScroll(_, y) => {
                             window.set_scale(window.current_scale() * if y > 0 { 1.05 } else { 1.0/1.05 });
                         },
                         WindowEvent::WindowSize(_) => {
-                            renderer.recreate(&window)
+                            renderer.recreate(&window, &backend.renderer_data())
                         },
                         _ => {}
                     }

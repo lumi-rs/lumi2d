@@ -9,7 +9,7 @@ fn main() {
         });
         let renderer = main_window.create_renderer(&backend).unwrap();
         
-        let font_bytes = include_bytes!("/home/der/Programering2/yetalauncher/resources/fonts/Nunito-Medium.ttf");
+        let font_bytes = include_bytes!("./Inter-Tight.ttf");
         backend.renderer_data().register_font(font_bytes, "Nunito");
 
         windows.push((main_window, renderer));
@@ -33,13 +33,13 @@ fn main() {
                             let index = windows.iter().position(|(win, _)| win.id() == event.window_id).unwrap();
                             windows.remove(index).0.close(&backend.data());
                             if windows.is_empty() {
-                                backend.exit();
+                                backend.unsubscribe();
                             }
                         },
                         WindowEvent::WindowSize(_) => {
                             windows.iter()
                             .find(|(win, _)| win.id() == event.window_id)
-                            .map(|(win, renderer)| renderer.recreate(win));
+                            .map(|(win, renderer)| renderer.recreate(win, &backend.renderer_data()));
                         },
                         _ => {}
                     }
@@ -55,5 +55,7 @@ fn main() {
                 ).unwrap();
             }
         });
+
+        drop(windows);
     }).unwrap();
 }

@@ -3,11 +3,11 @@ use std::{cell::{Ref, RefCell}, ffi::c_void};
 use crossbeam_channel::Sender;
 use enum_dispatch::enum_dispatch;
 use events::Event;
-use renderer_data::{RendererData, RendererDataTrait};
+use renderer_data::RendererData;
 use strum::{EnumIter, IntoEnumIterator};
 use windowing::WindowBackend;
 
-use crate::renderer::Renderer;
+use crate::{renderer::Renderer, traits::RendererTrait};
 
 use self::{errors::BackendError, windowing::window::{Window, WindowDetails}};
 
@@ -50,7 +50,6 @@ pub struct Backend<T> {
 pub trait BackendTrait<T> {
     fn create_window(&self, info: WindowDetails) -> Window;
     fn gl_proc_address(&self, proc_address: &str) -> *const c_void;
-    fn exit(&self);
     fn subscribe_events(&self, callback: impl FnMut(Vec<Event<T>>));
     fn unsubscribe(&self);
     fn flush_events(&self) -> Vec<Event<T>>;
@@ -91,7 +90,7 @@ impl<T> Backend<T> {
     pub fn transform_renderer_data(&self, renderer: &Renderer) {
         let mut data = self.renderer_data.borrow_mut();
 
-        if let Some(new) = data.transform_with(renderer) {
+        if let Some(new) = renderer.transform_data(&data) {
             *data = new;
         };
     }
@@ -104,10 +103,6 @@ impl<T> BackendTrait<T> for Backend<T> {
 
     fn gl_proc_address(&self, proc_address: &str) -> *const c_void {
         self.window_backend.gl_proc_address(proc_address)
-    }
-
-    fn exit(&self) {
-        self.window_backend.exit()
     }
 
     fn subscribe_events(&self, callback: impl FnMut(Vec<Event<T>>)) {
