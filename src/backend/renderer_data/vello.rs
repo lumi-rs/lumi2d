@@ -1,17 +1,17 @@
-use std::{cell::{Cell, RefCell}, collections::HashMap, fmt::Debug, mem::ManuallyDrop, sync::Arc};
+use std::{cell::{RefCell}, collections::HashMap, fmt::Debug, mem::ManuallyDrop};
 
 use log::warn;
-use skrifa::{raw::{FileRef, TableProvider}, FontRef};
+use skrifa::{raw::FileRef, FontRef};
 use vello::{peniko::{Blob, Font}, util::RenderContext};
 
-use crate::types::{CacheableImage, CacheableSvg, Renderer, WindowId};
+use crate::types::{CacheableImage, CacheableSvg, WindowId};
 
-use super::{RendererData, RendererDataTrait};
+use super::{RendererDataTrait};
 
 pub struct VelloRendererData {
     pub context: RefCell<ManuallyDrop<RenderContext>>,
     pub fonts: RefCell<HashMap<String, VelloFont>>,
-    pub default_font_index: Cell<isize>
+    pub default_font_alias: RefCell<String>
 }
 
 #[derive(Clone)]
@@ -27,21 +27,21 @@ impl VelloRendererData {
         Self {
             context,
             fonts: RefCell::new(HashMap::new()),
-            default_font_index: Cell::new(-1)
+            default_font_alias: RefCell::new(String::new())
         }
     }
 
     pub fn get_font(&self, alias: &Option<String>) -> Option<VelloFont> {
         let fonts = self.fonts.borrow();
 
-        if let Some(alias) = alias {
-            fonts.get(alias).or_else(|| {
-                warn!("Unregistered font: {alias}! Please register it first with RendererData::register_font");
-                None
-            }).cloned()
-        } else {
-            fonts.values().next().cloned()
-        }
+        alias
+        .as_ref()
+        .map(|al| fonts.get(al).cloned().or_else(|| {
+            warn!("Unregistered font: {al}! Please register it first with RendererData::register_font");
+            None
+        }))
+        .flatten()
+        .or_else(|| fonts.get(self.default_font_alias.borrow().as_str()).cloned())
     }
 }
 
@@ -60,6 +60,11 @@ impl RendererDataTrait for VelloRendererData {
             font_ref: unsafe { std::mem::transmute(font_ref) }
         };
 
+        let mut default_alias = self.default_font_alias.borrow_mut();
+        if *default_alias == "" {
+            *default_alias = alias.to_string();
+        }
+
         self.fonts.borrow_mut().insert(
             alias.to_string(),
             vello_font
@@ -67,27 +72,27 @@ impl RendererDataTrait for VelloRendererData {
     }
 
     fn register_default_font(&self, bytes: &[u8], alias: &str) {
-        self.default_font_index.set(self.fonts.borrow().len() as isize);
+        *self.default_font_alias.borrow_mut() = alias.to_string();
         self.register_font(bytes, alias);
     }
 
-    fn load_image(&self, image: &CacheableImage) {
+    fn load_image(&self, _image: &CacheableImage) {
         todo!()
     }
 
-    fn unload_image(&self, image: &CacheableImage) {
+    fn unload_image(&self, _image: &CacheableImage) {
         todo!()
     }
 
-    fn load_svg(&self, svg: &CacheableSvg) {
+    fn load_svg(&self, _svg: &CacheableSvg) {
         todo!()
     }
 
-    fn unload_svg(&self, svg: &CacheableSvg) {
+    fn unload_svg(&self, _svg: &CacheableSvg) {
         todo!()
     }
 
-    fn remove_window_data(&self, window_id: &WindowId) {
+    fn remove_window_data(&self, _window_id: &WindowId) {
         // Do nothing
     }
 }

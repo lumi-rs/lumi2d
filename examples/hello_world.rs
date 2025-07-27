@@ -39,7 +39,10 @@ fn main() {
         let svg = CacheableSvg::new_cloned(svg_bytes);
 
         let lorem_ipsum = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
-        let paragraph = backend.data().create_paragraph(lorem_ipsum.to_string(), 400, Some(120), Default::default());
+        let paragraph = backend.data().create_paragraph(lorem_ipsum.to_string(), 400, Some(120), TextOptions {
+            weight: 400,
+            ..Default::default()
+        });
 
         let const_objects = Vec::from([
             // Using a specific font

@@ -41,11 +41,14 @@ pub trait ParagraphTrait {
 
 #[derive(Debug, Clone)]
 pub struct TextOptions {
-    pub weight: u32,
     pub size: f32,
     pub font: Option<String>,
     pub color: u32,
+    /// Only works with variable fonts supporting the 'wght' axis
+    pub weight: u32,
+    /// Only works with variable fonts supporting the 'ital' or the 'slnt' axis
     pub italic: bool,
+    /// WIP
     pub underline: bool,
     pub wrap: TextWrap,
     pub overflow: TextOverflow

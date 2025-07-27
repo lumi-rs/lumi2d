@@ -24,6 +24,7 @@ skia-safe = { version = "0", optional = true, features = ["gpu", "svg", "textlay
 skrifa = { version = "0.31.0", optional = true }
 smol_str = "0.2"
 strum = { version = "0.26", features = ["derive"] }
+text_layout = { version = "0.3.0", optional = true }
 thiserror = "2"
 uuid = { version = "1.12", features = ["v4", "fast-rng"] }
 vello = { version = "0.5.0", optional = true }
@@ -44,14 +45,13 @@ b-glfw = ["dep:glfw"]
 b-winit = ["dep:winit"]
 # Renderers, for ...rendering
 r-wgpu = ["dep:wgpu"]
-r-vello = ["dep:vello", "dep:vello_svg", "dep:skrifa", "dep:bytemuck"]
+r-vello = ["dep:vello", "dep:vello_svg", "dep:skrifa", "dep:bytemuck", "dep:text_layout"]
 r-skia = ["dep:skia-safe"]
 # Skia rendering backends
 skia-vulkan = ["dep:vulkano", "dep:ash", "skia-safe?/vulkan", "glfw?/vulkan"]
 skia-opengl = ["dep:glow", "skia-safe?/gl"]
 skia-d3d = []
 skia-metal = []
-vello_svg = ["dep:vello_svg"]
 
 [profile.release]
 lto = true

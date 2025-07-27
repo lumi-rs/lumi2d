@@ -1,13 +1,14 @@
+use std::{rc::Rc, sync::Arc};
+
 use skrifa::MetadataProvider;
-use vello::{kurbo::{Affine, RoundedRect, RoundedRectRadii}, peniko::{color::Rgba8, BlendMode, Brush, BrushRef, Color, Fill, Font}, Glyph, Scene};
-use vello_svg::usvg::Size;
+use vello::{kurbo::{Affine, RoundedRect, RoundedRectRadii}, peniko::{Color, Fill}, Glyph, Scene};
 
-use crate::{backend::renderer_data::vello::VelloRendererData, types::{Object, Rect, WindowId}};
+use crate::{backend::renderer_data::vello::VelloRendererData, types::{Dimensions, Object, Rect, WindowId}};
 
-use super::VelloRenderer;
+use super::{text::VelloParagraph, VelloRenderer};
 
 
-pub(crate) fn draw_object(_renderer: &VelloRenderer, data: &VelloRendererData, scene: &mut Scene, object: &Object, scale: f32, window_id: &WindowId) {
+pub(crate) fn draw_object(_renderer: &VelloRenderer, data: &VelloRendererData, scene: &mut Scene, object: &Object, scale: f32, _window_id: &WindowId) {
     match object {
         Object::Rectangle { rounding, color, rect } => {
             if let Some(r) = rounding {
@@ -19,7 +20,7 @@ pub(crate) fn draw_object(_renderer: &VelloRenderer, data: &VelloRendererData, s
 
                 scene.fill(
                     Fill::NonZero,
-                    Affine::IDENTITY,
+                    Affine::scale(scale as _),
                     color,
                     None,
                     &rect
@@ -67,10 +68,26 @@ pub(crate) fn draw_object(_renderer: &VelloRenderer, data: &VelloRendererData, s
             }));
         },
         Object::Paragraph { paragraph, position } => {
+            let paragraph: Rc<VelloParagraph> = paragraph.clone().try_into().unwrap();
 
+            paragraph.append_to(scene, Some(
+                Affine::scale(scale as _)
+                * Affine::translate((position.x as f64, position.y as f64))
+            ));
         },
         Object::Image { image, rect } => {
+            let blob = vello::peniko::Blob::new(Arc::new(image.pixels()));
+            let Dimensions { width, height } = *image.dimensions();
+            let v_image = vello::peniko::Image::new(blob, vello::peniko::ImageFormat::Rgba8, width, height);
 
+            let (scale_x, scale_y) = (rect.width as f64 / width as f64, rect.height as f64 / height as f64);
+
+            scene.draw_image(
+                &v_image,
+                Affine::scale(scale as _)
+                * Affine::translate((rect.x as f64, rect.y as f64))
+                * Affine::scale_non_uniform(scale_x, scale_y)
+            );
         },
         Object::Svg { svg, color, rect } => {
             let svg =  vello_svg::usvg::Tree::from_data(

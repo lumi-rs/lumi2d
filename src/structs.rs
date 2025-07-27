@@ -3,7 +3,7 @@ use std::ops::{Div, Mul};
 use num_traits::AsPrimitive;
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Dimensions {
     pub width: u32,
     pub height: u32

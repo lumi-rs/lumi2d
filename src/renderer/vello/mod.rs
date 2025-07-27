@@ -1,6 +1,6 @@
-use std::{cell::{Cell, RefCell}, fmt::Debug, mem::ManuallyDrop};
+use std::{cell::{Cell, RefCell}, fmt::Debug};
 
-use vello::{peniko::color::{palette, AlphaColor}, util::{RenderContext, RenderSurface}, AaConfig, Scene};
+use vello::{peniko::color::AlphaColor, util::{RenderContext, RenderSurface}, AaConfig, Scene};
 
 use crate::{backend::renderer_data::vello::VelloRendererData, types::{Dimensions, Object, RResult, RendererData, Window, WindowTrait}};
 
@@ -132,7 +132,7 @@ impl RendererTrait for VelloRenderer {
 
     fn transform_data(&self, data: &RendererData) -> Option<RendererData> {
         return match data {
-            RendererData::Placeholder(placeholder) => {
+            RendererData::Placeholder(_placeholder) => {
                 let context = self.temp_context
                 .take()
                 .unwrap_or_else(|| RenderContext::new());
