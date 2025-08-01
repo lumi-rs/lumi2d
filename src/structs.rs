@@ -3,39 +3,39 @@ use std::ops::{Div, Mul};
 use num_traits::AsPrimitive;
 
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Dimensions {
-    pub width: u32,
-    pub height: u32
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct Dimensions<T> {
+    pub width: T,
+    pub height: T
 }
 
-impl Dimensions {
+impl<T> Dimensions<T> {
     #[inline]
-    pub fn new(width: u32, height: u32) -> Self {
+    pub fn new(width: T, height: T) -> Self {
         Self { width, height }
     }
 }
 
-impl<T: Into<u32>> From<(T, T)> for Dimensions {
+impl<T, U: Into<T>> From<(U, U)> for Dimensions<T> {
     #[inline]
-    fn from((w, h): (T, T)) -> Self {
+    fn from((w, h): (U, U)) -> Self {
         Self::new(w.into(), h.into())
     }
 }
 
-impl<T: Into<u32>> From<[T; 2]> for Dimensions {
+impl<T, U: Into<T>> From<[U; 2]> for Dimensions<T> {
     #[inline]
-    fn from([w, h]: [T; 2]) -> Self {
+    fn from([w, h]: [U; 2]) -> Self {
         Self::new(w.into(), h.into())
     }
 }
 
-impl Div<f32> for Dimensions {
+impl<T: AsPrimitive<f32>> Div<f32> for Dimensions<T> where f32: AsPrimitive<T> {
     type Output = Self;
 
     fn div(self, with: f32) -> Self::Output {
         let [width, height] = [self.width, self.height]
-        .map(|size| (size as f32 / with).round() as u32);
+        .map(|size| (size.as_() / with).round().as_());
 
         Self::new(width, height)
     }

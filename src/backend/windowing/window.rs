@@ -47,8 +47,8 @@ impl Window {
 #[enum_dispatch]
 pub trait WindowTrait {
     fn handles(&self) -> Result<WindowHandles, HandleError>;
-    fn physical_dimensions(&self) -> Dimensions;
-    fn dimensions(&self) -> Dimensions;
+    fn physical_dimensions(&self) -> Dimensions<u32>;
+    fn dimensions(&self) -> Dimensions<u32>;
     fn set_mode(&self, window_mode: WindowModes);
     fn target_scale(&self) -> f32;
     fn current_scale(&self) -> f32;

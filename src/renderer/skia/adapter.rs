@@ -41,17 +41,19 @@ pub(crate) fn draw_object(_renderer: &SkiaRenderer, data: &SkiaRendererData, can
         Object::Text { text, font, size, color, position } => {
             let typeface = data.get_font(font).unwrap();
             let paint = paint(*color, 0.0);
-
+            
             let mut skia_font = Font::from_typeface(typeface, *size);
             skia_font.set_edging(skia_safe::font::Edging::SubpixelAntiAlias);
             skia_font.set_hinting(skia_safe::FontHinting::Slight);
             skia_font.set_subpixel(true);
+            
+            let (line_height, _metrics) = skia_font.metrics();
 
             let text_blob = TextBlob::from_str(text, &skia_font).unwrap();
 
             canvas.draw_text_blob(
                 text_blob,
-                (position.x as f32, (position.y as f32 + size)),
+                (position.x as f32, (position.y as f32 + line_height)),
                 &paint
             );
         },
@@ -106,7 +108,7 @@ pub(crate) fn draw_object(_renderer: &SkiaRenderer, data: &SkiaRendererData, can
 pub(crate) fn paint(color: u32, width: f32) -> Paint {
     let mut paint = Paint::new(rgba_to_color4f(color), None);
     paint.set_anti_alias(true);
-    paint.set_style(PaintStyle::StrokeAndFill);
+    paint.set_style(PaintStyle::Fill);
     paint.set_stroke_width(width);
 
     paint

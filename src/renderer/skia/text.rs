@@ -1,6 +1,6 @@
 use std::{num::NonZeroU32, rc::Rc};
 
-use skia_safe::{font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, Font, FontStyle};
+use skia_safe::{font_arguments::{variation_position::Coordinate, VariationPosition}, font_style::{Slant, Weight, Width}, textlayout::{self, ParagraphBuilder, ParagraphStyle, TextStyle}, Font, FontArguments, FontStyle, FourByteTag};
 
 use crate::{backend::renderer_data::skia::SkiaRendererData, renderer::text::{ParagraphTrait, TextOptions, TextOverflow, TextWrap}};
 
@@ -20,6 +20,18 @@ impl SkiaParapgraph {
         let paint = paint(options.color, 0.0);
         let typeface = data.get_font(&options.font);
 
+        let var_coords = VariationPosition {
+            coordinates: &make_var_coords(&[("wght", options.weight as f32)])
+        };
+        let arguments = FontArguments::new().set_variation_design_position(var_coords);
+
+        if let Some(typeface) = &typeface {
+            text_style.set_typeface(typeface.clone_with_arguments(&arguments));
+            text_style.set_font_families(&[typeface.family_name()]);
+        }
+
+        
+
         text_style
         .set_foreground_paint(&paint)
         .set_font_size(options.size)
@@ -31,11 +43,10 @@ impl SkiaParapgraph {
             } else {
                 Slant::Upright
             }
-        ));
+        ))
+        .set_font_arguments(&arguments);
 
-        if let Some(font) = &typeface {
-            text_style.set_font_families(&[font.family_name()]);
-        }
+
         if options.overflow == TextOverflow::Elide {
             paragraph_style.set_ellipsis("…");
         }
@@ -71,7 +82,23 @@ impl ParagraphTrait for Rc<SkiaParapgraph> {
         &self.options
     }
     
-    fn height(&self) -> u32 {
-        self.paragraph.height() as _
+    fn height(&self) -> f32 {
+        self.paragraph.height()
     }
+}
+
+fn make_var_coords(from: &[(&str, f32)]) -> Vec<Coordinate> {
+    let coordinates: Vec<Coordinate> = from.iter().map(|(axis, val)| {
+        let b = axis.as_bytes();
+        let converted: u32 = *bytemuck::from_bytes(&[b[3], b[2], b[1], b[0]]);
+
+        // dbg!(FourByteTag::new(converted), FourByteTag::from_chars('w', 'g', 'h', 't'));
+
+        Coordinate {
+            axis: FourByteTag::new(converted),
+            value: *val
+        }
+    }).collect();
+
+    coordinates
 }

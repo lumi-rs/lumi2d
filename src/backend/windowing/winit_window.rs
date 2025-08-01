@@ -105,12 +105,12 @@ impl WindowTrait for WinitWindow {
         WindowHandles::from(&self.window)
     }
 
-    fn physical_dimensions(&self) -> Dimensions {
+    fn physical_dimensions(&self) -> Dimensions<u32> {
         let PhysicalSize { width, height} = self.window.inner_size();
         Dimensions::new(width, height)
     }
 
-    fn dimensions(&self) -> Dimensions {
+    fn dimensions(&self) -> Dimensions<u32> {
         let LogicalSize { width, height} = self.window.inner_size().to_logical(self.current_scale() as _);
         Dimensions::new(width, height)
     }

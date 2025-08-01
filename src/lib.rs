@@ -1,3 +1,5 @@
+#![allow(unreachable_patterns)] // For enum values behind feature flags
+
 pub mod backend;
 pub mod renderer;
 pub mod structs;

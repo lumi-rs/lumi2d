@@ -15,7 +15,7 @@ use crate::structs::Dimensions;
 pub struct CacheableImage {
     pixels: Arc<[u8]>,
     format: PixelFormat,
-    dimensions: Dimensions,
+    dimensions: Dimensions<u32>,
     uuid: Uuid
 }
 
@@ -82,7 +82,7 @@ impl CacheableImage {
         )
     }
 
-    pub fn new(pixels: Arc<[u8]>, format: PixelFormat, dimensions: Dimensions) -> Self {
+    pub fn new(pixels: Arc<[u8]>, format: PixelFormat, dimensions: Dimensions<u32>) -> Self {
         Self { pixels, format, dimensions, uuid: Uuid::new_v4() }
     }
 
@@ -94,7 +94,7 @@ impl CacheableImage {
         &self.format
     }
 
-    pub fn dimensions(&self) -> &Dimensions {
+    pub fn dimensions(&self) -> &Dimensions<u32> {
         &self.dimensions
     }
 

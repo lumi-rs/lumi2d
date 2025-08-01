@@ -8,8 +8,8 @@ use super::RendererDataTrait;
 
 #[derive(Debug)]
 pub struct PlaceholderRendererData {
-    fonts: RefCell<Vec<(String, Vec<u8>)>>,
-    default_index: Cell<isize>,
+    pub fonts: RefCell<Vec<(String, Vec<u8>)>>,
+    pub default_index: Cell<isize>,
     // These will be dynamically cached when needed, so no need to transfer them from here
     // images: RefCell<HashMap<Uuid, CacheableImage>>,
     // svgs: RefCell<HashMap<Uuid, CacheableSvg>>

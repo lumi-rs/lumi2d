@@ -25,10 +25,22 @@ pub(crate) fn draw_object(_renderer: &VelloRenderer, data: &VelloRendererData, s
                     None,
                     &rect
                 );
+            } else {
+                let rect = vello_rect(rect);
+                let color = color_from_rgba(*color);
+
+                scene.fill(
+                    Fill::NonZero,
+                    Affine::scale(scale as _),
+                    color,
+                    None,
+                    &rect
+                );
             }
         },
         Object::Text { text, font, size, color, position } => {
             let font = data.get_font(font).expect("No Font available!");
+
 
             let size = size * scale;
             
@@ -42,7 +54,10 @@ pub(crate) fn draw_object(_renderer: &VelloRenderer, data: &VelloRendererData, s
             let start_x = position.x as f32 * scale;
             let mut pen_x = start_x;
             let mut pen_y = position.y as f32 * scale + line_height;
-            
+
+            // For debugging
+            // self::draw_object(_renderer, data, scene, &Object::rectangle(position.x, position.y, 20, line_height as _, 0xEE667788, None), scale, _window_id);
+
             scene.draw_glyphs(&font.font)
             .hint(true)
             .font_size(size)

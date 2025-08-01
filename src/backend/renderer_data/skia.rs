@@ -159,10 +159,6 @@ impl RendererDataTrait for SkiaRendererData {
         self.svg_cache.borrow_mut().remove(svg.uuid());
     }
 
-    fn transform_with(&self, _renderer: &crate::renderer::Renderer) -> Option<super::RendererData> {
-        None
-    }
-
     fn remove_window_data(&self, window_id: &WindowId) {
         let mut svgs = self.svg_cache.borrow_mut();
         let mut to_remove = Vec::new();

@@ -35,7 +35,7 @@ impl Paragraph {
 #[enum_dispatch]
 pub trait ParagraphTrait {
     fn options(&self) -> &TextOptions;
-    fn height(&self) -> u32;
+    fn height(&self) -> f32;
 }
 
 

@@ -15,7 +15,7 @@ fn main() {
         let window = backend.create_window(WindowDetails {
             width: 800,
             height: 200,
-            title: "Amogus".to_string(),
+            title: "Example Window".to_string(),
             ..Default::default()
         });
 
@@ -53,9 +53,9 @@ fn main() {
             Object::text(20, 20,  "Hello, world!".to_string(), None, 30.0, 0xFFFFFFFF),
             Object::text(100, 400,  "TeXt!!1".to_string(), None, 100.0, 0xFFFFFFFF),
             Object::image(400, 10, image.dimensions().width / 4, image.dimensions().height / 4, image.clone()),
-            Object::text(30, 500 + paragraph.height() as i32, paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF),
+            Object::text(30, 550 + paragraph.height() as i32, paragraph.height().to_string(), None, 20.0, 0xFFFFFFFF),
             // For multiline text
-            Object::paragraph(30, 500, paragraph.clone())
+            Object::paragraph(30, 550, paragraph.clone())
         ]);
 
         let backend = &backend;

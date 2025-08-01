@@ -15,7 +15,7 @@ pub enum WindowEvent {
     CloseRequested,
     /// Will not be emitted on Wayland, mobile and web!
     WindowPos(Position<i32>),
-    WindowSize(Dimensions),
+    WindowSize(Dimensions<u32>),
     CursorPos(Position<f64>),
     /// Button number, KeyAction
     MouseButton(u32, KeyAction),

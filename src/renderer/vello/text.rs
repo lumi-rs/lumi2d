@@ -4,12 +4,13 @@ use skrifa::MetadataProvider;
 use text_layout::{Item, ParagraphLayout};
 use vello::{kurbo::Affine, peniko::Fill, Glyph, Scene};
 
-use crate::{backend::renderer_data::vello::VelloRendererData, types::{ParagraphTrait, TextOptions, TextWrap}};
+use crate::{backend::renderer_data::vello::VelloRendererData, types::{Dimensions, ParagraphTrait, TextOptions, TextWrap}};
 
 #[derive(Clone)]
 pub struct VelloParagraph {
     options: TextOptions,
-    scene: Scene
+    scene: Scene,
+    dimensions: Dimensions<f32>
 }
 
 impl ParagraphTrait for Rc<VelloParagraph> {
@@ -17,8 +18,8 @@ impl ParagraphTrait for Rc<VelloParagraph> {
         &self.options
     }
 
-    fn height(&self) -> u32 {
-        100
+    fn height(&self) -> f32 {
+        self.dimensions.height
     }
 }
 
@@ -44,8 +45,6 @@ impl VelloParagraph {
         let metrics = font.font_ref.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
         let glyph_metrics = font.font_ref.glyph_metrics(font_size, &var_loc);
-        
-        let mut scene = vello::Scene::new();
 
         let glyphs: Vec<_> = text.chars().map(|ch| {
             let gid = charmap.map(ch).unwrap_or_default();
@@ -77,6 +76,10 @@ impl VelloParagraph {
             Vec::new()
         };
 
+                
+        let mut scene = vello::Scene::new();
+        let mut dimensions = Dimensions::new(width as _, line_height);
+
         let start_x = 0.0;
         let mut pen_x = start_x;
         let mut pen_y = 0.0 + line_height;
@@ -91,9 +94,11 @@ impl VelloParagraph {
             if breaks.len() > break_i && index == breaks[break_i].break_at {
                 break_i += 1;
 
-                pen_y += line_height;
+                pen_y += line_height; // TODO: Handle max_height
                 pen_x = start_x;
                 advance = 0.0;
+
+                dimensions.height += line_height;
             }
 
             let x = pen_x;
@@ -109,7 +114,8 @@ impl VelloParagraph {
 
         Self {
             options,
-            scene
+            scene,
+            dimensions
         }
     }
 
