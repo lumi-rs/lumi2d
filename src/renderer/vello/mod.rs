@@ -2,7 +2,7 @@ use std::{cell::{Cell, RefCell}, fmt::Debug};
 
 use vello::{peniko::color::AlphaColor, util::{RenderContext, RenderSurface}, AaConfig, Scene};
 
-use crate::{backend::renderer_data::vello::VelloRendererData, types::{Dimensions, Object, RResult, RendererData, Window, WindowTrait}};
+use crate::{backend::renderer_data::vello::VelloRendererData, traits::RendererDataTrait, types::{Dimensions, Object, RResult, RendererData, Window, WindowTrait}};
 
 use super::RendererTrait;
 
@@ -132,13 +132,23 @@ impl RendererTrait for VelloRenderer {
 
     fn transform_data(&self, data: &RendererData) -> Option<RendererData> {
         return match data {
-            RendererData::Placeholder(_placeholder) => {
+            RendererData::Placeholder(placeholder) => {
                 let context = self.temp_context
                 .take()
                 .unwrap_or_else(|| RenderContext::new());
 
-                let vello = VelloRendererData::new(context);
-                Some(vello.into())
+                let new = VelloRendererData::new(context);
+                
+                let default_index = placeholder.default_index.get() as usize;
+                for (index, (alias, bytes)) in placeholder.fonts.borrow_mut().drain(..).enumerate() {
+                    if index == default_index {
+                        new.register_default_font(&bytes, &alias);
+                    } else {
+                        new.register_font(&bytes, &alias);
+                    }
+                }
+
+                Some(new.into())
             },
             _ => None
         }
