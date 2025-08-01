@@ -39,7 +39,7 @@ simple_logger = "5"
 
 
 [features]
-default = ["b-winit", "r-skia", "image"]
+default = ["b-winit", "r-vello", "image"]
 # Backends, for interacting with the windowing system
 b-glfw = ["dep:glfw"]
 b-winit = ["dep:winit"]
